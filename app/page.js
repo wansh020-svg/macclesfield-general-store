@@ -28,10 +28,16 @@ export default function Home() {
           <ul className="space-y-3 text-ink/80">
             <li>&mdash; Coffee, breakfast &amp; brunch</li>
             <li>&mdash; Lunch &amp; deli-style plates</li>
-            <li>&mdash; Everyday groceries &amp; pantry staples</li>
+            <li>&mdash; Groceries, milk &amp; frozen meals</li>
+            <li>&mdash; Gas bottle swap &amp; go, firewood &amp; kindling</li>
             <li>&mdash; Outdoor seating &amp; takeaway</li>
-            <li>&mdash; Wheelchair accessible parking &amp; entry</li>
           </ul>
+          <a
+            href="/store"
+            className="inline-block mt-6 font-mono text-xs uppercase tracking-widest text-rust hover:underline"
+          >
+            See everything in store &rarr;
+          </a>
         </div>
       </section>
 
