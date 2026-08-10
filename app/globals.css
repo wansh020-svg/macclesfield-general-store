@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #F2E8D5;
+  color: #2A2419;
+}
+
+/* Signature element: a hand-tagged price ticket, used for eyebrows,
+   badges, and menu prices throughout the site. */
+.price-tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.9rem 0.35rem 1.5rem;
+  background: #FAF3E4;
+  border: 1px solid rgba(42, 36, 25, 0.25);
+  font-family: var(--font-plex-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #2A2419;
+  clip-path: polygon(12px 0, 100% 0, 100% 100%, 12px 100%, 0 50%);
+}
+
+.price-tag::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  border: 1px solid rgba(42, 36, 25, 0.5);
+}
+
+.torn-edge {
+  position: relative;
+}
+
+.torn-edge::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 10px;
+  background-image: linear-gradient(135deg, #F2E8D5 50%, transparent 50%),
+    linear-gradient(45deg, #F2E8D5 50%, transparent 50%);
+  background-size: 16px 16px;
+  background-position: bottom;
+}
