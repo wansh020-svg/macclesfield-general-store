@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useCart } from "@/components/CartContext";
 
 export const metadataInfo = {
   title: "Menu | Macclesfield General Store",
@@ -237,15 +239,37 @@ const menu = {
   ],
 };
 
+// Pulls the first dollar figure out of a price string like "$9" or
+// "3 for $6.50" so it can be added to the cart. Combo/range prices with
+// no clean single figure are shown as "Ask in store" instead.
+function parsePrice(priceStr) {
+  if (!priceStr) return null;
+  const match = priceStr.match(/\$([\d.]+)/);
+  return match ? parseFloat(match[1]) : null;
+}
+
 const tabs = Object.keys(menu);
 
 export default function MenuPage() {
   const [active, setActive] = useState(tabs[0]);
+  const { addItem, count } = useCart();
 
   return (
     <section className="max-w-5xl mx-auto px-5 py-20">
-      <span className="price-tag mb-4">On the Board</span>
-      <h1 className="font-display font-900 text-4xl mt-4 mb-10">Menu</h1>
+      <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+        <span className="price-tag">On the Board</span>
+        <Link
+          href="/cart"
+          className="font-mono text-xs uppercase tracking-widest border border-ink/20 px-4 py-2 hover:border-ink/50 transition-colors"
+        >
+          Cart {count > 0 ? `(${count})` : ""}
+        </Link>
+      </div>
+      <h1 className="font-display font-900 text-4xl mt-4 mb-2">Menu</h1>
+      <p className="text-ink/50 text-sm mb-10">
+        Add items to order for cash-on-delivery &mdash; some combo/priced-by-choice items
+        can&apos;t be added directly, call the store for those.
+      </p>
 
       <div className="flex flex-wrap gap-2 mb-14 border-b border-ink/10 pb-4">
         {tabs.map((tab) => (
@@ -269,14 +293,29 @@ export default function MenuPage() {
             <h2 className="font-display font-700 text-2xl mb-1">{cat.name}</h2>
             {cat.note && <p className="text-ink/60 text-sm mb-6">{cat.note}</p>}
             <ul className={`divide-y divide-ink/10 border-t border-b border-ink/10 ${!cat.note ? "mt-6" : ""}`}>
-              {cat.items.map((item) => (
-                <li key={item.name} className="flex items-start justify-between gap-6 py-3">
-                  <span className="text-ink/90">{item.name}</span>
-                  {item.price && (
-                    <span className="font-mono text-sm text-ink/60 whitespace-nowrap">{item.price}</span>
-                  )}
-                </li>
-              ))}
+              {cat.items.map((item) => {
+                const priceNum = parsePrice(item.price);
+                return (
+                  <li key={item.name} className="flex items-center justify-between gap-6 py-3">
+                    <span className="text-ink/90">{item.name}</span>
+                    <div className="flex items-center gap-3 whitespace-nowrap">
+                      {item.price && (
+                        <span className="font-mono text-sm text-ink/60">{item.price}</span>
+                      )}
+                      {priceNum ? (
+                        <button
+                          onClick={() => addItem({ name: item.name, price: priceNum })}
+                          className="font-mono text-xs uppercase tracking-widest bg-rust text-canvas-light px-3 py-1.5 hover:bg-rust/90 transition-colors"
+                        >
+                          Add
+                        </button>
+                      ) : (
+                        <span className="font-mono text-xs text-ink/40">Ask in store</span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

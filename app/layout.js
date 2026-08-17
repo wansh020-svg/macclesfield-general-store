@@ -2,6 +2,7 @@ import { Fraunces, Work_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import { CartProvider } from "@/components/CartContext";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -34,9 +35,11 @@ export default function RootLayout({ children }) {
       <body
         className={`${fraunces.variable} ${workSans.variable} ${plexMono.variable} font-body bg-canvas text-ink`}
       >
-        <Nav />
-        <main>{children}</main>
-        <Footer />
+        <CartProvider>
+          <Nav />
+          <main>{children}</main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useCart } from "@/components/CartContext";
 
 const links = [
   { href: "/", label: "Home" },
@@ -13,6 +14,7 @@ const links = [
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
+  const { count } = useCart();
 
   return (
     <header className="sticky top-0 z-50 bg-pine text-canvas-light border-b border-pine-dark">
@@ -27,6 +29,9 @@ export default function Nav() {
               {link.label}
             </Link>
           ))}
+          <Link href="/cart" className="hover:text-rust transition-colors">
+            Cart{count > 0 ? ` (${count})` : ""}
+          </Link>
         </nav>
 
         <button
@@ -46,6 +51,9 @@ export default function Nav() {
               {link.label}
             </Link>
           ))}
+          <Link href="/cart" onClick={() => setOpen(false)}>
+            Cart{count > 0 ? ` (${count})` : ""}
+          </Link>
         </nav>
       )}
     </header>
