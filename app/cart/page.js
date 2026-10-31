@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCart } from "@/components/CartContext";
 
 export default function CartPage() {
-  const { items, updateQty, removeItem, total } = useCart();
+  const { items, updateQty, removeItem, total, count } = useCart();
 
   if (items.length === 0) {
     return (
@@ -14,7 +14,7 @@ export default function CartPage() {
         <p className="text-ink/60 mb-6">Browse the menu and add a few things to get started.</p>
         <Link
           href="/menu"
-          className="inline-block bg-rust text-canvas-light font-mono text-xs uppercase tracking-widest px-6 py-3 hover:bg-rust/90 transition-colors"
+          className="inline-block rounded-full bg-rust text-canvas-light font-mono text-xs uppercase tracking-widest px-8 py-4"
         >
           Go to Menu
         </Link>
@@ -23,58 +23,69 @@ export default function CartPage() {
   }
 
   return (
-    <section className="max-w-2xl mx-auto px-5 py-16">
-      <span className="price-tag mb-4">Your Cart</span>
-      <h1 className="font-display font-900 text-3xl mt-4 mb-8">Your Order</h1>
+    <section className="max-w-2xl mx-auto px-5 pt-10 pb-40">
+      <Link href="/menu" className="font-mono text-xs uppercase tracking-widest text-ink/60">
+        &larr; Back to menu
+      </Link>
+      <h1 className="font-display font-900 text-4xl mt-4 mb-1">Your order</h1>
+      <p className="text-ink/60 text-sm mb-6">
+        {count} {count === 1 ? "item" : "items"}
+      </p>
 
-      <ul className="divide-y divide-ink/10 border-t border-b border-ink/10 mb-8">
+      <ul className="divide-y divide-ink/10 border-t border-b border-ink/10">
         {items.map((item) => (
-          <li key={item.name} className="flex items-center justify-between gap-4 py-4">
-            <div>
-              <p>{item.name}</p>
-              <p className="font-mono text-sm text-ink/60">${item.price.toFixed(2)} each</p>
+          <li key={item.name} className="py-4">
+            <div className="flex items-start justify-between gap-4">
+              <p className="font-display font-700 text-lg leading-snug">{item.name}</p>
+              <p className="font-mono text-sm shrink-0">${(item.price * item.qty).toFixed(2)}</p>
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => updateQty(item.name, item.qty - 1)}
-                className="w-7 h-7 border border-ink/20"
-                aria-label={`Decrease ${item.name}`}
-              >
-                &minus;
-              </button>
-              <span className="font-mono w-6 text-center">{item.qty}</span>
-              <button
-                onClick={() => updateQty(item.name, item.qty + 1)}
-                className="w-7 h-7 border border-ink/20"
-                aria-label={`Increase ${item.name}`}
-              >
-                +
-              </button>
+            <div className="flex items-center justify-between mt-3">
               <button
                 onClick={() => removeItem(item.name)}
-                className="text-rust text-xs font-mono ml-2 hover:underline"
+                className="text-rust text-xs font-mono uppercase tracking-widest"
               >
                 Remove
               </button>
+              <div className="flex items-center bg-pine text-canvas-light rounded-full">
+                <button
+                  onClick={() => updateQty(item.name, item.qty - 1)}
+                  className="w-10 h-10 text-xl leading-none"
+                  aria-label={`Decrease ${item.name}`}
+                >
+                  &minus;
+                </button>
+                <span className="font-mono w-6 text-center">{item.qty}</span>
+                <button
+                  onClick={() => updateQty(item.name, item.qty + 1)}
+                  className="w-10 h-10 text-xl leading-none"
+                  aria-label={`Increase ${item.name}`}
+                >
+                  +
+                </button>
+              </div>
             </div>
           </li>
         ))}
       </ul>
 
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-mono uppercase text-xs tracking-widest text-ink/50">Estimated Total</span>
-        <span className="font-display text-2xl">${total.toFixed(2)}</span>
-      </div>
-      <p className="text-ink/50 text-sm mb-8">
-        Final total confirmed by the store &mdash; payment is cash on delivery.
+      <p className="text-ink/50 text-sm mt-6">
+        Payment is cash on delivery. The store confirms your final total and delivery fee.
       </p>
 
-      <Link
-        href="/checkout"
-        className="inline-block bg-rust text-canvas-light font-mono text-xs uppercase tracking-widest px-6 py-3 hover:bg-rust/90 transition-colors"
-      >
-        Continue to Checkout
-      </Link>
+      <div className="fixed bottom-0 inset-x-0 z-50 bg-canvas border-t border-ink/10 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <span className="font-mono uppercase text-xs tracking-widest text-ink/50">Subtotal</span>
+            <span className="font-display font-700 text-2xl">${total.toFixed(2)}</span>
+          </div>
+          <Link
+            href="/checkout"
+            className="block text-center rounded-full bg-rust text-canvas-light font-display font-700 text-lg py-4"
+          >
+            Checkout
+          </Link>
+        </div>
+      </div>
     </section>
   );
 }

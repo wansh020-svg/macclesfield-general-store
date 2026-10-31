@@ -1,325 +1,188 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/components/CartContext";
+import { menu, groups, splitItem, parsePrice, cartName } from "@/lib/menu";
 
-export const metadataInfo = {
-  title: "Menu | Macclesfield General Store",
-};
+const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-const menu = {
-  Drinks: [
-    {
-      name: "Coffee",
-      note: "Small $5.50 / Medium $6 / Large $7",
-      items: [
-        { name: "Latte", price: "" },
-        { name: "Cappuccino", price: "" },
-        { name: "Flat White", price: "" },
-        { name: "Long Black", price: "" },
-        { name: "Piccolo", price: "$4.50" },
-        { name: "Macchiato", price: "$4.50" },
-        { name: "Babycino", price: "$3.50" },
-        { name: "Extra shot", price: "$1.00" },
-        { name: "Alternative milks (oat/soy/almond/lactose free)", price: "$1.00" },
-        { name: "Syrups (caramel/vanilla/hazelnut)", price: "$1.00" },
-      ],
-    },
-    {
-      name: "Heavenly Hot Chocolate",
-      items: [
-        { name: "Milk", price: "" },
-        { name: "Dark", price: "" },
-        { name: "White", price: "" },
-        { name: "Mint (v/gf)", price: "" },
-        { name: "Orange (v/gf)", price: "" },
-        { name: "Chilli (v/gf)", price: "" },
-        { name: "Salted Caramel (v/gf)", price: "" },
-        { name: "Milk Choc (v/gf)", price: "" },
-      ],
-    },
-    {
-      name: "Tea",
-      items: [
-        { name: "English Breakfast", price: "" },
-        { name: "Earl Grey", price: "" },
-        { name: "Chai", price: "" },
-        { name: "Green", price: "" },
-        { name: "Peppermint", price: "" },
-        { name: "Chamomile", price: "" },
-        { name: "Honeydew Green", price: "" },
-        { name: "Teapot for one", price: "$7.00" },
-        { name: "Teapot for two", price: "$9.00" },
-      ],
-    },
-    {
-      name: "Chai",
-      items: [
-        { name: "Spiced", price: "" },
-        { name: "Chocolate", price: "" },
-        { name: "Vegan & GF Chai", price: "" },
-        { name: "Vanilla", price: "" },
-        { name: "Mango", price: "" },
-      ],
-    },
-    {
-      name: "Iced Drinks",
-      note: "One size $8.50 · made with cream and icecream (except Long Black)",
-      items: [
-        { name: "Iced Coffee", price: "" },
-        { name: "Iced Chocolate", price: "" },
-        { name: "Iced Mocha", price: "" },
-        { name: "Iced Chai", price: "" },
-        { name: "Long Black (v)", price: "" },
-      ],
-    },
-    {
-      name: "Smoothies",
-      note: "One size $9.00 · made with apple juice",
-      items: [
-        { name: "Mixed Berries", price: "" },
-        { name: "Mango and Banana", price: "" },
-      ],
-    },
-    {
-      name: "Shakes",
-      note: "Milkshakes $8.00 / Thickshakes $9.00",
-      items: [
-        { name: "Chocolate", price: "" },
-        { name: "Vanilla", price: "" },
-        { name: "Caramel", price: "" },
-        { name: "Lime", price: "" },
-        { name: "Strawberry", price: "" },
-        { name: "Coffee", price: "" },
-        { name: "Blue Heaven", price: "" },
-        { name: "Banana", price: "" },
-      ],
-    },
-  ],
-  Breakfast: [
-    {
-      name: "Muffins",
-      items: [
-        { name: "Maccy Muffin — bacon, fried egg & American cheese on a toasted English muffin", price: "$9" },
-        { name: "Tradie Muffin — bacon, fried egg, hashbrown & American cheese on a toasted English muffin", price: "$10" },
-        { name: "Veg Maccy Muffin — fried egg, hashbrown & American cheese on a toasted English muffin", price: "$9" },
-      ],
-    },
-    {
-      name: "Rolls & Classics",
-      items: [
-        { name: "Bacon & Egg Sandwich — toasted white bread", price: "$8" },
-        { name: "Bacon & Egg Roll — toasted roll", price: "$10" },
-        { name: "BLT — bacon, lettuce, tomato and aioli, toasted white bread", price: "$9" },
-      ],
-    },
-    {
-      name: "Croissants",
-      items: [
-        { name: "Ham & Cheese", price: "$8.50" },
-        { name: "Cheese & Tomato (v)", price: "$8.50" },
-        { name: "Ham, Cheese & Tomato", price: "$9.00" },
-      ],
-    },
-    {
-      name: "Toasted Sandwiches",
-      items: [
-        { name: "Ham & Cheese", price: "$7" },
-        { name: "Cheese & Tomato (v)", price: "$7" },
-        { name: "Ham, Cheese & Tomato", price: "$8" },
-      ],
-    },
-    {
-      name: "Sourdough Breakfasts",
-      items: [
-        { name: "Bacon & Eggs on Sourdough — two eggs (fried or scrambled) with bacon", price: "$16" },
-        { name: "Eggs on Sourdough — two eggs (fried or scrambled)", price: "$13.50" },
-        { name: "Veggie Brekky — two eggs, grilled tomato and baby spinach", price: "$14.50" },
-      ],
-    },
-    {
-      name: "Toast",
-      items: [
-        { name: "Toast (v)", price: "$7" },
-        { name: "Raisin Toast (v)", price: "$7" },
-      ],
-    },
-    {
-      name: "Extras",
-      items: [
-        { name: "Mushrooms", price: "$2" },
-        { name: "Tomato", price: "$2" },
-        { name: "Baby spinach", price: "$1.50" },
-        { name: "Hashbrown", price: "$3.50" },
-        { name: "Bacon", price: "$2" },
-        { name: "Egg", price: "$2" },
-        { name: "Avocado", price: "$2" },
-        { name: "Cheese", price: "50c" },
-      ],
-    },
-  ],
-  Lunch: [
-    {
-      name: "Burgers",
-      items: [
-        { name: "Beef Burger — cheese, onion, tomato, lettuce, chutney & mayo (add egg or bacon $2 each)", price: "$15" },
-        { name: "Chicken Burger — crumbed chicken, cheese, lettuce, tomato, red onion & mayo (add Peri mayo)", price: "$15" },
-        { name: "Veggie Burger — cheese, tomato, lettuce, red onion & mayo", price: "$15" },
-        { name: "Cheeseburger — American cheese, onion, pickles, mustard & tomato sauce", price: "$11" },
-      ],
-    },
-    {
-      name: "Hot Dogs",
-      items: [
-        { name: "Hot Dog — tomato sauce and mustard", price: "$8" },
-        { name: "Hot Dog with the lot — cheese, fried onion, bacon, tomato sauce & mustard", price: "$10" },
-      ],
-    },
-    {
-      name: "Meals",
-      items: [
-        { name: "Chicken Schnitzel — served with chips and salad", price: "$18" },
-        { name: "Fish and Chips — one piece of fish with chips, salad & tartare (extra piece $4)", price: "$16" },
-      ],
-    },
-    {
-      name: "Chips & Share",
-      items: [
-        { name: "Hot Chips — Small", price: "$8" },
-        { name: "Hot Chips — Large", price: "$10" },
-        { name: "Side of chips with meal", price: "$3" },
-        { name: "Gravy", price: "$2" },
-        { name: "Wedges — Small (sour cream & sweet chilli)", price: "$10" },
-        { name: "Wedges — Large", price: "$11.50" },
-      ],
-    },
-    {
-      name: "Sides & Snacks",
-      items: [
-        { name: "Chiko Roll", price: "$5" },
-        { name: "Cornjack", price: "$5" },
-        { name: "Dim Sims", price: "3 for $6.50" },
-        { name: "Devil Wings", price: "3 for $9" },
-        { name: "Chicken Nuggets", price: "5 for $5.50 / 10 for $8.50" },
-        { name: "Chicken Tenders", price: "$3 / 3 for $8" },
-      ],
-    },
-    {
-      name: "Kids",
-      items: [
-        { name: "Kids Snack Pack — two chicken tenders, chips and tomato sauce", price: "$9" },
-      ],
-    },
-  ],
-  "Punjabi Cuisine": [
-    {
-      name: "Curries",
-      note: "Prices shown are with rice / without rice",
-      items: [
-        { name: "Butter Chicken (gf) — mild creamy tomato gravy", price: "$17 / $19" },
-        { name: "Mango Chicken (gf) — very mild, sweet & creamy mango gravy", price: "$18 / $20" },
-        { name: "Lamb Rogan Josh (gf/df) — rich, medium spiced aromatic gravy", price: "$19 / $21" },
-        { name: "Beef Rogan Josh (gf/df) — rich, medium spiced aromatic gravy", price: "$19 / $21" },
-        { name: "Vegetarian Curry (v) — ask staff for today's option", price: "$15 / $17" },
-      ],
-    },
-    {
-      name: "Sides & Snacks",
-      items: [
-        { name: "Rice", price: "$4" },
-        { name: "Butter Naan", price: "$4" },
-        { name: "Garlic Naan", price: "$4.50" },
-        { name: "Cheese Naan", price: "$4.50" },
-        { name: "Pappadam (2)", price: "$3" },
-        { name: "Tikki (v)", price: "$3" },
-        { name: "Samosa (v)", price: "$3.50" },
-      ],
-    },
-  ],
-};
-
-// Pulls the first dollar figure out of a price string like "$9" or
-// "3 for $6.50" so it can be added to the cart. Combo/range prices with
-// no clean single figure are shown as "Ask in store" instead.
-function parsePrice(priceStr) {
-  if (!priceStr) return null;
-  const match = priceStr.match(/\$([\d.]+)/);
-  return match ? parseFloat(match[1]) : null;
+function Stepper({ qty, onMinus, onPlus, label }) {
+  return (
+    <div className="flex items-center bg-pine text-canvas-light rounded-full">
+      <button onClick={onMinus} aria-label={`Remove one ${label}`} className="w-9 h-9 text-lg leading-none">
+        &minus;
+      </button>
+      <span className="font-mono text-sm w-5 text-center">{qty}</span>
+      <button onClick={onPlus} aria-label={`Add one ${label}`} className="w-9 h-9 text-lg leading-none">
+        +
+      </button>
+    </div>
+  );
 }
 
-const tabs = Object.keys(menu);
+function ItemRow({ cat, item }) {
+  const { items, addItem, updateQty } = useCart();
+  const { title, desc } = splitItem(item.name);
+  const price = parsePrice(item.price);
 
-export default function MenuPage() {
-  const [active, setActive] = useState(tabs[0]);
-  const { addItem, count } = useCart();
+  const qtyOf = (name) => items.find((i) => i.name === name)?.qty || 0;
 
   return (
-    <section className="max-w-5xl mx-auto px-5 py-20">
-      <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
-        <span className="price-tag">On the Board</span>
-        <Link
-          href="/cart"
-          className="font-mono text-xs uppercase tracking-widest border border-ink/20 px-4 py-2 hover:border-ink/50 transition-colors"
-        >
-          Cart {count > 0 ? `(${count})` : ""}
-        </Link>
+    <li className="py-4 flex gap-4 items-start justify-between">
+      <div className="min-w-0">
+        <p className="font-display font-700 text-lg leading-snug">{title}</p>
+        {desc && <p className="text-ink/60 text-sm mt-1 leading-snug">{desc}</p>}
+        {item.price && <p className="font-mono text-sm text-ink/70 mt-2">{item.price}</p>}
       </div>
-      <h1 className="font-display font-900 text-4xl mt-4 mb-2">Menu</h1>
-      <p className="text-ink/50 text-sm mb-10">
-        Add items to order for cash-on-delivery &mdash; some combo/priced-by-choice items
-        can&apos;t be added directly, call the store for those.
-      </p>
 
-      <div className="flex flex-wrap gap-2 mb-14 border-b border-ink/10 pb-4">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActive(tab)}
-            className={`font-mono text-xs uppercase tracking-widest px-4 py-2 border transition-colors ${
-              active === tab
-                ? "bg-pine text-canvas-light border-pine"
-                : "border-ink/20 text-ink/70 hover:border-ink/50"
-            }`}
+      <div className="shrink-0 flex flex-col items-end gap-2">
+        {cat.sizes ? (
+          cat.sizes.map((s) => {
+            const name = cartName(cat, item, s.label);
+            const q = qtyOf(name);
+            return (
+              <div key={s.label} className="flex items-center gap-2">
+                <span className="font-mono text-xs text-ink/60">
+                  {s.label} ${s.price.toFixed(2)}
+                </span>
+                {q > 0 ? (
+                  <Stepper qty={q} label={name} onMinus={() => updateQty(name, q - 1)} onPlus={() => addItem({ name, price: s.price })} />
+                ) : (
+                  <button
+                    onClick={() => addItem({ name, price: s.price })}
+                    aria-label={`Add ${name}`}
+                    className="w-9 h-9 rounded-full bg-rust text-canvas-light text-xl leading-none"
+                  >
+                    +
+                  </button>
+                )}
+              </div>
+            );
+          })
+        ) : price ? (
+          (() => {
+            const name = cartName(cat, item);
+            const q = qtyOf(name);
+            return q > 0 ? (
+              <Stepper qty={q} label={name} onMinus={() => updateQty(name, q - 1)} onPlus={() => addItem({ name, price })} />
+            ) : (
+              <button
+                onClick={() => addItem({ name, price })}
+                aria-label={`Add ${name}`}
+                className="w-10 h-10 rounded-full bg-rust text-canvas-light text-2xl leading-none"
+              >
+                +
+              </button>
+            );
+          })()
+        ) : (
+          <span className="font-mono text-xs text-ink/40 text-right max-w-[6rem]">Ask in store</span>
+        )}
+      </div>
+    </li>
+  );
+}
+
+export default function MenuPage() {
+  const [active, setActive] = useState(groups[0]);
+  const { count, total } = useCart();
+  const barRef = useRef(null);
+  const lockUntil = useRef(0);
+
+  // Highlight the group chip for whichever section is under the sticky bars.
+  useEffect(() => {
+    const els = groups.map((g) => document.getElementById(slug(g))).filter(Boolean);
+    function onScroll() {
+      if (Date.now() < lockUntil.current) return;
+      let current = groups[0];
+      for (const el of els) {
+        if (el.getBoundingClientRect().top <= 140) current = el.dataset.group;
+      }
+      setActive(current);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Keep the active chip visible inside the horizontally scrolling bar.
+  useEffect(() => {
+    const chip = barRef.current?.querySelector(`[data-chip="${slug(active)}"]`);
+    chip?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  }, [active]);
+
+  function jump(g) {
+    setActive(g);
+    lockUntil.current = Date.now() + 700;
+    document.getElementById(slug(g))?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  return (
+    <div className="pb-28">
+      <div className="bg-pine-dark text-canvas-light px-5 pt-8 pb-6">
+        <div className="max-w-2xl mx-auto">
+          <span className="price-tag">On the Board</span>
+          <h1 className="font-display font-900 text-4xl mt-4">Menu</h1>
+          <p className="text-canvas-light/70 text-sm mt-2">
+            Order for delivery &mdash; pay cash when it arrives. Items marked &ldquo;Ask in store&rdquo; can&apos;t be
+            ordered online yet.
+          </p>
+        </div>
+      </div>
+
+      <div className="sticky top-16 z-40 bg-canvas border-b border-ink/10">
+        <div ref={barRef} className="max-w-2xl mx-auto flex gap-2 overflow-x-auto px-5 py-3 [scrollbar-width:none]">
+          {groups.map((g) => (
+            <button
+              key={g}
+              data-chip={slug(g)}
+              onClick={() => jump(g)}
+              className={`whitespace-nowrap rounded-full px-4 py-2 font-mono text-xs uppercase tracking-widest border transition-colors ${
+                active === g ? "bg-pine text-canvas-light border-pine" : "border-ink/20 text-ink/70"
+              }`}
+            >
+              {g}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-5">
+        {groups.map((g) => (
+          <section key={g} id={slug(g)} data-group={g} className="scroll-mt-32 pt-10">
+            <h2 className="font-display font-900 text-3xl mb-2">{g}</h2>
+            {menu[g].map((cat) => (
+              <div key={cat.name} className="mt-8">
+                <h3 className="font-mono text-xs uppercase tracking-widest text-rust">{cat.name}</h3>
+                {cat.note && <p className="text-ink/60 text-sm mt-1">{cat.note}</p>}
+                <ul className="divide-y divide-ink/10 border-t border-ink/10 mt-3">
+                  {cat.items.map((item) => (
+                    <ItemRow key={item.name} cat={cat} item={item} />
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </section>
+        ))}
+      </div>
+
+      {count > 0 && (
+        <div className="fixed bottom-0 inset-x-0 z-50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-canvas via-canvas/95 to-transparent">
+          <Link
+            href="/cart"
+            className="max-w-2xl mx-auto flex items-center justify-between rounded-full bg-rust text-canvas-light px-6 py-4 shadow-lg"
           >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      <div className="space-y-16">
-        {menu[active].map((cat) => (
-          <div key={cat.name}>
-            <h2 className="font-display font-700 text-2xl mb-1">{cat.name}</h2>
-            {cat.note && <p className="text-ink/60 text-sm mb-6">{cat.note}</p>}
-            <ul className={`divide-y divide-ink/10 border-t border-b border-ink/10 ${!cat.note ? "mt-6" : ""}`}>
-              {cat.items.map((item) => {
-                const priceNum = parsePrice(item.price);
-                return (
-                  <li key={item.name} className="flex items-center justify-between gap-6 py-3">
-                    <span className="text-ink/90">{item.name}</span>
-                    <div className="flex items-center gap-3 whitespace-nowrap">
-                      {item.price && (
-                        <span className="font-mono text-sm text-ink/60">{item.price}</span>
-                      )}
-                      {priceNum ? (
-                        <button
-                          onClick={() => addItem({ name: item.name, price: priceNum })}
-                          className="font-mono text-xs uppercase tracking-widest bg-rust text-canvas-light px-3 py-1.5 hover:bg-rust/90 transition-colors"
-                        >
-                          Add
-                        </button>
-                      ) : (
-                        <span className="font-mono text-xs text-ink/40">Ask in store</span>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </section>
+            <span className="flex items-center gap-3">
+              <span className="bg-canvas-light/20 rounded-full w-7 h-7 flex items-center justify-center font-mono text-sm">
+                {count}
+              </span>
+              <span className="font-display font-700 text-lg">View cart</span>
+            </span>
+            <span className="font-mono">${total.toFixed(2)}</span>
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }
