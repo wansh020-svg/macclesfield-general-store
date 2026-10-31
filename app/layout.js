@@ -2,6 +2,7 @@ import { Fraunces, Work_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import TabBar from "@/components/TabBar";
 import { CartProvider } from "@/components/CartContext";
 
 const fraunces = Fraunces({
@@ -33,12 +34,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${fraunces.variable} ${workSans.variable} ${plexMono.variable} font-body bg-canvas text-ink`}
+        className={`${fraunces.variable} ${workSans.variable} ${plexMono.variable} font-body bg-canvas text-ink pb-16 md:pb-0`}
       >
         <CartProvider>
           <Nav />
           <main>{children}</main>
           <Footer />
+          <TabBar />
         </CartProvider>
       </body>
     </html>

@@ -34,21 +34,21 @@ export default function CartPage() {
 
       <ul className="divide-y divide-ink/10 border-t border-b border-ink/10">
         {items.map((item) => (
-          <li key={item.name} className="py-4">
+          <li key={item.key} className="py-4">
             <div className="flex items-start justify-between gap-4">
               <p className="font-display font-700 text-lg leading-snug">{item.name}</p>
               <p className="font-mono text-sm shrink-0">${(item.price * item.qty).toFixed(2)}</p>
             </div>
             <div className="flex items-center justify-between mt-3">
               <button
-                onClick={() => removeItem(item.name)}
+                onClick={() => removeItem(item.key)}
                 className="text-rust text-xs font-mono uppercase tracking-widest"
               >
                 Remove
               </button>
               <div className="flex items-center bg-pine text-canvas-light rounded-full">
                 <button
-                  onClick={() => updateQty(item.name, item.qty - 1)}
+                  onClick={() => updateQty(item.key, item.qty - 1)}
                   className="w-10 h-10 text-xl leading-none"
                   aria-label={`Decrease ${item.name}`}
                 >
@@ -56,7 +56,7 @@ export default function CartPage() {
                 </button>
                 <span className="font-mono w-6 text-center">{item.qty}</span>
                 <button
-                  onClick={() => updateQty(item.name, item.qty + 1)}
+                  onClick={() => updateQty(item.key, item.qty + 1)}
                   className="w-10 h-10 text-xl leading-none"
                   aria-label={`Increase ${item.name}`}
                 >
@@ -69,7 +69,7 @@ export default function CartPage() {
       </ul>
 
       <p className="text-ink/50 text-sm mt-6">
-        Payment is cash on delivery. The store confirms your final total and delivery fee.
+        Payment is cash on delivery. The final total is worked out when you place the order.
       </p>
 
       <div className="fixed bottom-0 inset-x-0 z-50 bg-canvas border-t border-ink/10 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">

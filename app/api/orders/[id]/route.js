@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { markOrderStatus } from "@/lib/db";
-import { SESSION_COOKIE, isValidSession } from "@/lib/session";
+import { isStaff } from "@/lib/auth";
 
 export async function PATCH(request, { params }) {
-  const cookieStore = cookies();
-  if (!(await isValidSession(cookieStore.get(SESSION_COOKIE)?.value))) {
+  if (!(await isStaff())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,24 +1,40 @@
-import Link from "next/link";
+import OrderMenu from "@/components/OrderMenu";
+import CartBar from "@/components/CartBar";
+import { getMenu } from "@/lib/db";
+import { fallbackMenu } from "@/lib/seed";
 
-export const metadata = {
-  title: "Online Ordering | Macclesfield General Store",
-};
+export const metadata = { title: "Order | Macclesfield General Store" };
+export const dynamic = "force-dynamic"; // staff edits show up straight away
 
-export default function OrderPage() {
+async function loadMenu() {
+  try {
+    return { divisions: await getMenu(), live: true };
+  } catch (err) {
+    console.error("Menu database unavailable, showing the built-in menu:", err.message);
+    return { divisions: fallbackMenu(), live: false };
+  }
+}
+
+export default async function OrderPage() {
+  const { divisions, live } = await loadMenu();
   return (
-    <section className="max-w-2xl mx-auto px-5 py-24 text-center">
-      <span className="price-tag mb-6">Cash on Delivery</span>
-      <h1 className="font-display font-900 text-4xl sm:text-5xl mt-4 mb-6">Order Online</h1>
-      <p className="text-ink/70 max-w-xl mx-auto text-lg mb-10">
-        Browse the menu, add what you&apos;d like, and place your order &mdash;
-        no payment needed online, just cash when it arrives.
-      </p>
-      <Link
-        href="/menu"
-        className="inline-block bg-rust text-canvas-light font-mono text-xs uppercase tracking-widest px-6 py-3 hover:bg-rust/90 transition-colors"
-      >
-        Browse the Menu
-      </Link>
-    </section>
+    <div className="pb-32">
+      <div className="bg-pine-dark text-canvas-light px-5 pt-8 pb-6">
+        <div className="max-w-5xl mx-auto">
+          <span className="price-tag">Cash on Delivery</span>
+          <h1 className="font-display font-900 text-4xl mt-4">Order</h1>
+          <p className="text-canvas-light/70 text-sm mt-2">
+            Pick what you like and pay cash when it arrives.
+          </p>
+          {!live && (
+            <p className="mt-3 text-sm rounded bg-rust/40 px-3 py-2">
+              Online ordering is having trouble right now. Please call the store on (08) 8188 5301.
+            </p>
+          )}
+        </div>
+      </div>
+      <OrderMenu divisions={divisions} />
+      <CartBar />
+    </div>
   );
 }

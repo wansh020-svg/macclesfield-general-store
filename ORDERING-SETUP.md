@@ -61,3 +61,27 @@ Without this setup, `/cart`, `/checkout`, and `/dashboard` will show errors
 locally — but the rest of the site (`/`, `/menu`, `/store`, `/contact`)
 works completely fine either way, since only the ordering feature needs the
 database.
+
+## Managing the menu, deals and pictures (staff)
+
+Log in at `/dashboard` and use the three tabs at the top:
+
+- **Orders**: incoming orders, as before.
+- **Menu**: every division (the sideways shelves on the Order page) and every item.
+  Tap an item to change its name, description, price, sizes/options, picture,
+  or mark it **Sold out**. Use the arrows to reorder divisions, **Hidden** to hide one.
+  Items with no price show "Ask in store" and can't be ordered until you set one.
+  For options with different prices, write them as `Small=5.50, Medium=6, Large=7`.
+- **Deals**: the cards in the row on the Home page. New deals start **Hidden**;
+  fill one in, then switch it to **Showing**. A deal with no price is info-only.
+
+Pictures are optional. A card only shows a picture if one was uploaded for it.
+Photos are shrunk in the browser before upload and stored in the same database,
+so there is nothing extra to set up.
+
+The first time the site runs after this update it fills the menu from the built-in
+starting menu. After that, **the dashboard is the source of truth**: editing
+`lib/menu.js` no longer changes the live menu.
+
+Prices are always worked out on the server from the database, so a customer
+can't change what they pay by editing the page in their browser.

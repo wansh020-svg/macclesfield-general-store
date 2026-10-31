@@ -1,15 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/CartContext";
+import { loadProfile, rememberOrder, saveProfile } from "@/lib/local";
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [remember, setRemember] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const p = loadProfile();
+    setForm((f) => ({ ...f, name: p.name || "", phone: p.phone || "", address: p.address || "" }));
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -30,17 +37,24 @@ export default function CheckoutPage() {
           phone: form.phone,
           address: form.address,
           notes: form.notes,
-          items: items.map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
-          estimatedTotal: total,
+          items: items.map((i) => ({ itemId: i.itemId, dealId: i.dealId, size: i.size, qty: i.qty })),
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to place order");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to place order");
 
+      if (remember) saveProfile(form);
+      rememberOrder({
+        id: data.order.id, at: Date.now(), total: data.order.total,
+        items: items.map((i) => ({ key: i.key, name: i.name, price: i.price, qty: i.qty, itemId: i.itemId, dealId: i.dealId, size: i.size })),
+      });
       clearCart();
-      router.push("/checkout/success");
+      router.push(`/checkout/success?id=${data.order.id}`);
     } catch (err) {
-      setError("Something went wrong placing your order. Please call the store instead.");
+      setError(err.message && err.message !== "Failed to place order"
+        ? err.message
+        : "Something went wrong placing your order. Please call the store instead.");
     } finally {
       setSubmitting(false);
     }
@@ -89,6 +103,10 @@ export default function CheckoutPage() {
           onChange={(e) => setForm({ ...form, notes: e.target.value })}
           className="w-full border border-ink/20 bg-canvas-light px-4 py-3"
         />
+        <label className="flex items-center gap-2 text-sm text-ink/70">
+          <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+          Remember my details on this phone
+        </label>
         {error && <p className="text-rust text-sm">{error}</p>}
         <button
           type="submit"
