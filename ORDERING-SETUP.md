@@ -16,6 +16,8 @@ password.
    project.
 3. Vercel automatically adds the right environment variables
    (`POSTGRES_URL` and friends) — you don't need to copy/paste anything.
+   The site reads `POSTGRES_URL` with the standard `pg` driver, so any normal
+   Postgres connection string works (direct or pooled; Neon, Prisma Postgres, etc.).
 4. Redeploy the project once (Vercel usually does this automatically after
    connecting storage — if not, go to **Deployments** → **Redeploy**).
 
