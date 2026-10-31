@@ -53,3 +53,20 @@ body {
   background-size: 16px 16px;
   background-position: bottom;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop,
+  .animate-rise {
+    animation: none;
+  }
+}
+
+/* Smooth jump when a chip or tile scrolls to a shelf */
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

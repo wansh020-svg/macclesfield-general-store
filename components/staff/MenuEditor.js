@@ -8,7 +8,7 @@ function ItemEditor({ item, divisions, onSaved, onDeleted }) {
   const [d, setD] = useState({
     name: item.name, description: item.description || "", category: item.category || "",
     price: item.price ?? "", price_note: item.price_note || "", sizes: sizesToText(item.sizes),
-    available: item.available, image_id: item.image_id, division_id: item.division_id,
+    available: item.available, image_id: item.image_id, division_id: item.division_id, tag: item.tag || "",
   });
   const [msg, setMsg] = useState("");
   const set = (k, v) => setD((x) => ({ ...x, [k]: v }));
@@ -55,6 +55,9 @@ function ItemEditor({ item, divisions, onSaved, onDeleted }) {
         </div>
         <Label text="Sizes / options" hint="Optional. Replaces the single price. Example: Small=5.50, Medium=6, Large=7">
           <input className={input} value={d.sizes} onChange={(e) => set("sizes", e.target.value)} />
+        </Label>
+        <Label text="Tag (optional)" hint="A small label on the card, like Popular or New. Max 20 characters.">
+          <input className={input} maxLength={20} value={d.tag} onChange={(e) => set("tag", e.target.value)} />
         </Label>
         <div className="grid grid-cols-2 gap-3">
           <Label text="Group label"><input className={input} value={d.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Tea" /></Label>

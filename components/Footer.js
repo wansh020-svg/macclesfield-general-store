@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-pine-dark text-canvas-light mt-24">
+    <footer className="bg-pine-dark text-canvas-light mt-0">
       <div className="max-w-5xl mx-auto px-5 py-10 grid gap-8 sm:grid-cols-3 text-sm">
         <div>
           <p className="font-display text-lg mb-2">Macclesfield General Store</p>

@@ -34,12 +34,14 @@ export default function TabBar() {
               <Link
                 href={t.href}
                 aria-current={on ? "page" : undefined}
-                className={`h-full flex flex-col items-center justify-center gap-1 ${on ? "text-rust" : "text-ink/55"}`}
+                className={`h-full flex flex-col items-center justify-center gap-0.5 ${on ? "text-ink" : "text-ink/50"}`}
               >
+                <span className={`px-5 py-1 rounded-full transition-colors ${on ? "bg-gold" : ""}`}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d={t.icon} />
                 </svg>
-                <span className="font-mono text-[10px] uppercase tracking-widest">{t.label}</span>
+                </span>
+                <span className={`font-display text-[11px] ${on ? "font-900" : "font-700"}`}>{t.label}</span>
               </Link>
             </li>
           );

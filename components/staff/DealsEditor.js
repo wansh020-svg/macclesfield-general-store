@@ -7,7 +7,7 @@ import { ImageField, Label, Toggle, btn, input } from "@/components/staff/Bits";
 function Deal({ deal, first, last, onSaved, onDeleted, onMove }) {
   const [d, setD] = useState({
     title: deal.title, description: deal.description || "", price: deal.price ?? "",
-    active: deal.active, image_id: deal.image_id,
+    active: deal.active, image_id: deal.image_id, tag: deal.tag || "",
   });
   const [msg, setMsg] = useState("");
   const set = (k, v) => setD((x) => ({ ...x, [k]: v }));
@@ -39,6 +39,9 @@ function Deal({ deal, first, last, onSaved, onDeleted, onMove }) {
       <Label text="Description"><textarea rows={2} className={input} value={d.description} onChange={(e) => set("description", e.target.value)} /></Label>
       <Label text="Price ($)" hint="Leave blank for an info-only card with no Add button.">
         <input className={input} inputMode="decimal" value={d.price} onChange={(e) => set("price", e.target.value)} placeholder="e.g. 15" />
+      </Label>
+      <Label text="Tag (optional)" hint="Shown on the big banner and cards, like Today only or New. Max 20 characters.">
+        <input className={input} maxLength={20} value={d.tag} onChange={(e) => set("tag", e.target.value)} />
       </Label>
       <ImageField imageId={d.image_id} onChange={(id) => { set("image_id", id); save({ image_id: id }); }} />
       <div className="flex flex-wrap items-center gap-2">

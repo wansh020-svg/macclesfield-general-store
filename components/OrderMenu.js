@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ItemCard, Row } from "@/components/Cards";
 import { slug } from "@/lib/format";
+import { toneAt } from "@/lib/tones";
 
 export default function OrderMenu({ divisions }) {
   const [active, setActive] = useState(divisions[0]?.name);
@@ -46,13 +47,13 @@ export default function OrderMenu({ divisions }) {
     <>
       <div className="sticky top-16 z-40 bg-canvas border-b border-ink/10">
         <div ref={barRef} className="max-w-5xl mx-auto flex gap-2 overflow-x-auto px-5 py-3 [scrollbar-width:none]">
-          {divisions.map((d) => (
+          {divisions.map((d, i) => (
             <button
               key={d.id}
               data-chip={slug(d.name)}
               onClick={() => jump(d.name)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 font-mono text-xs uppercase tracking-widest border transition-colors ${
-                active === d.name ? "bg-pine text-canvas-light border-pine" : "border-ink/20 text-ink/70"
+              className={`whitespace-nowrap rounded-full px-4 py-2 font-display font-700 text-sm border-2 transition-colors ${
+                active === d.name ? `${toneAt(i).solid} ${toneAt(i).ring}` : "border-ink/15 text-ink/70 bg-canvas-light"
               }`}
             >
               {d.name}
@@ -61,10 +62,10 @@ export default function OrderMenu({ divisions }) {
         </div>
       </div>
 
-      {divisions.map((d) => (
-        <Row key={d.id} id={slug(d.name)} title={d.name}>
+      {divisions.map((d, i) => (
+        <Row key={d.id} id={slug(d.name)} title={d.name} tone={i}>
           {d.items.map((item) => (
-            <ItemCard key={item.id} item={item} />
+            <ItemCard key={item.id} item={item} tone={i} />
           ))}
         </Row>
       ))}
