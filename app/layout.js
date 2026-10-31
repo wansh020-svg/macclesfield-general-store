@@ -1,28 +1,14 @@
-import { Fraunces, Work_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import TabBar from "@/components/TabBar";
 import { CartProvider } from "@/components/CartContext";
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
-  weight: ["500", "600", "700", "900"],
-  style: ["normal", "italic"],
-});
-
-const workSans = Work_Sans({
-  subsets: ["latin"],
-  variable: "--font-work-sans",
-  weight: ["400", "500", "600"],
-});
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  variable: "--font-plex-mono",
-  weight: ["400", "500"],
-});
+import "@fontsource-variable/fraunces";
+import "@fontsource/work-sans/400.css";
+import "@fontsource/work-sans/500.css";
+import "@fontsource/work-sans/600.css";
+import "@fontsource/ibm-plex-mono/400.css";
+import "@fontsource/ibm-plex-mono/500.css";
 
 export const metadata = {
   title: "Macclesfield General Store | Venables St, Macclesfield SA",
@@ -34,7 +20,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${fraunces.variable} ${workSans.variable} ${plexMono.variable} font-body bg-canvas text-ink pb-16 md:pb-0`}
+        className={`font-body bg-canvas text-ink pb-16 md:pb-0`}
       >
         <CartProvider>
           <Nav />

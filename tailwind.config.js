@@ -15,9 +15,9 @@ module.exports = {
         rust: "#6E2A38",
       },
       fontFamily: {
-        display: ["var(--font-fraunces)", "Georgia", "serif"],
-        body: ["var(--font-work-sans)", "system-ui", "sans-serif"],
-        mono: ["var(--font-plex-mono)", "monospace"],
+        display: ["\"Fraunces Variable\"", "Georgia", "serif"],
+        body: ["\"Work Sans\"", "system-ui", "sans-serif"],
+        mono: ["\"IBM Plex Mono\"", "monospace"],
       },
     },
   },
