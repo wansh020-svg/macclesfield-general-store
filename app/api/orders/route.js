@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createOrder, getOrders } from "@/lib/db";
+import { SESSION_COOKIE, isValidSession } from "@/lib/session";
 
 export async function POST(request) {
   try {
@@ -21,8 +22,7 @@ export async function POST(request) {
 
 export async function GET() {
   const cookieStore = cookies();
-  const auth = cookieStore.get("staff_auth");
-  if (!auth || auth.value !== "true") {
+  if (!(await isValidSession(cookieStore.get(SESSION_COOKIE)?.value))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

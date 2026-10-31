@@ -23,8 +23,11 @@ export default function LoginPage() {
         router.push("/dashboard");
         router.refresh();
       } else {
-        setError("Incorrect password");
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Something went wrong. Try again.");
       }
+    } catch {
+      setError("Couldn't reach the server. Check your connection.");
     } finally {
       setSubmitting(false);
     }
