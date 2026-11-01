@@ -1,5 +1,7 @@
 import PrintBar from "@/components/PrintBar";
 import { isLight, printTheme } from "@/lib/printTheme";
+import { deliveryText } from "@/lib/hours";
+import { printDelivery } from "@/lib/printDelivery";
 import { qrSvg } from "@/lib/qr";
 import { SHOP, SITE_URL } from "@/lib/site";
 
@@ -12,6 +14,8 @@ export default async function PosterPage({ searchParams }) {
   const offer = clean(searchParams?.offer);
   const light = isLight(searchParams?.light);
   const t = printTheme(light);
+  const delivery = await printDelivery();
+  const when = deliveryText(delivery);
   const link = `${SITE_URL}/order?src=poster`;
   const shown = link.replace(/^https?:\/\/(www\.)?/, "").replace(/\?.*$/, "");
   const qr = await qrSvg(link);
@@ -34,8 +38,11 @@ export default async function PosterPage({ searchParams }) {
             <p style={{ fontSize: "5.2mm", marginTop: "5mm", maxWidth: "150mm" }} className={t.sub}>
               Coffee, brekkie, burgers and proper Punjabi curries from your local general store. Order online and pay cash when it arrives.
             </p>
+            <p className="font-display font-900 border-2 border-current rounded-full self-start" style={{ fontSize: "5.4mm", padding: "2mm 6mm", marginTop: "6mm" }}>
+              Delivery {when}
+            </p>
             {offer && (
-              <p className="font-display font-900 bg-gold text-ink rounded-full self-start" style={{ fontSize: "6mm", padding: "2.5mm 7mm", marginTop: "6mm" }}>{offer}</p>
+              <p className="font-display font-900 bg-gold text-ink rounded-full self-start" style={{ fontSize: "6mm", padding: "2.5mm 7mm", marginTop: "4mm" }}>{offer}</p>
             )}
 
             <div className="flex items-center" style={{ gap: "10mm", marginTop: "auto" }}>
@@ -60,7 +67,7 @@ export default async function PosterPage({ searchParams }) {
               </div>
               <div className="text-right">
                 <p className={`font-display font-900 ${t.accent}`} style={{ fontSize: "5.4mm" }}>{SHOP.phone}</p>
-                <p className={t.sub}>Open 7 days. Delivery within 5 km.</p>
+                <p className={t.sub}>Delivery {when}, within {delivery.radiusKm} km.</p>
               </div>
             </div>
           </div>

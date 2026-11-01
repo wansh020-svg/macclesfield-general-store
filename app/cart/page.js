@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useCart } from "@/components/CartContext";
+import DeliveryStatus from "@/components/DeliveryStatus";
+import { useDelivery } from "@/components/DeliveryContext";
 
 export default function CartPage() {
   const { items, updateQty, removeItem, total, count } = useCart();
+  const { open } = useDelivery();
 
   if (items.length === 0) {
     return (
@@ -68,6 +71,7 @@ export default function CartPage() {
         ))}
       </ul>
 
+      {!open && <DeliveryStatus className="mt-6" />}
       <p className="text-ink/50 text-sm mt-6">
         Payment is cash on delivery. The final total is worked out when you place the order.
       </p>
@@ -78,12 +82,18 @@ export default function CartPage() {
             <span className="font-mono uppercase text-xs tracking-widest text-ink/50">Subtotal</span>
             <span className="font-display font-700 text-2xl">${total.toFixed(2)}</span>
           </div>
-          <Link
-            href="/checkout"
-            className="block text-center rounded-full bg-rust text-canvas-light font-display font-700 text-lg py-4"
-          >
-            Checkout
-          </Link>
+          {open ? (
+            <Link
+              href="/checkout"
+              className="block text-center rounded-full bg-rust text-canvas-light font-display font-700 text-lg py-4"
+            >
+              Checkout
+            </Link>
+          ) : (
+            <span aria-disabled="true" className="block text-center rounded-full bg-ink/15 text-ink/50 font-display font-700 text-lg py-4">
+              Checkout opens when delivery does
+            </span>
+          )}
         </div>
       </div>
     </section>

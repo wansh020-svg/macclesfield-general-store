@@ -1,5 +1,6 @@
 import OrderMenu from "@/components/OrderMenu";
 import CartBar from "@/components/CartBar";
+import DeliveryStatus from "@/components/DeliveryStatus";
 import { getMenu } from "@/lib/db";
 import { fallbackMenu } from "@/lib/seed";
 
@@ -26,6 +27,7 @@ export default async function OrderPage() {
           </span>
           <h1 className="font-display font-900 text-5xl leading-none mt-4">What are you having?</h1>
           <p className="text-canvas-light/70 mt-3">Swipe each shelf, tap + to add, pay cash when it arrives.</p>
+          <DeliveryStatus className="mt-4" />
           {!live && (
             <p className="mt-4 text-sm rounded-xl bg-rust px-4 py-3">
               Online ordering is having trouble right now. Please call the store on (08) 8188 5301.

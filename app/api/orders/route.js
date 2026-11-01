@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isStaff } from "@/lib/auth";
 import { createOrder, getDelivery, getOrders, priceCart } from "@/lib/db";
 import { haversineKm } from "@/lib/geo";
+import { deliveryState, describeWindows } from "@/lib/hours";
 import { readAddressProof } from "@/lib/session";
 
 const clip = (v, n) => String(v ?? "").trim().slice(0, n);
@@ -36,6 +37,16 @@ export async function POST(request) {
     console.error(err);
     return NextResponse.json({ error: "Failed to place order" }, { status: 500 });
   }
+  // Deliveries only run at set times (Dashboard > Settings). Refuse anything outside them.
+  const when = deliveryState(delivery);
+  if (!when.open) {
+    const days = describeWindows(delivery.schedule)[0]?.text;
+    const message = when.paused
+      ? "Online ordering is paused right now. Please call the store on (08) 8188 5301."
+      : `We're not delivering right now. Delivery runs ${days || "at set times"}${when.next ? `. Next delivery: ${when.next.text}` : ""}.`;
+    return NextResponse.json({ error: message, closed: true }, { status: 409 });
+  }
+
   if (body.addressProof) {
     const proof = await readAddressProof(body.addressProof);
     if (!proof) return NextResponse.json({ error: "Please check your address again." }, { status: 400 });

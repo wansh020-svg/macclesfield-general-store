@@ -155,3 +155,17 @@ can't be faked.
 - The site also tells Google its address, phone, opening hours and ordering link.
 - Set `SITE_URL` in Vercel only if the main address ever changes from
   `www.macclesfieldgeneralstore.com.au`.
+
+
+## Opening hours and delivery times
+
+- **Delivery times** (default: Friday, Saturday and Sunday, 4pm to 8pm, Adelaide time) are set in
+  **Dashboard > Settings > Delivery times**: tick the days, set the start and end, press **Save times**.
+  The website, footer, Contact page, posters and flyers all update (the PDFs need re-printing).
+- Online ordering **only works during delivery times**. Outside them customers can look at the menu,
+  but the Add buttons say Closed, checkout is blocked, and the server refuses the order with the next
+  delivery time. The same switch has two overrides: **Open now** (ignores the times, handy for an
+  extra night) and **Paused** (no orders at all, handy if the kitchen is swamped). Switch it back to
+  **Following the weekly times** afterwards.
+- **Dine-in hours** (Mon to Thu 6:30am to 6:30pm; Fri to Sun 6:30am to 8pm) are set in the code, in
+  `SHOP.hours` in `lib/site.js`. Change them there and they update everywhere on the site.

@@ -1,3 +1,5 @@
+import ShopHours from "@/components/ShopHours";
+
 export default function Footer() {
   return (
     <footer className="bg-pine-dark text-canvas-light mt-0">
@@ -7,9 +9,7 @@ export default function Footer() {
           <p className="opacity-80">32 Venables St, Macclesfield SA 5153</p>
         </div>
         <div>
-          <p className="font-mono uppercase text-xs tracking-widest opacity-60 mb-2">Hours</p>
-          <p className="opacity-80">Mon &ndash; Fri: 6:30am &ndash; 6:30pm</p>
-          <p className="opacity-80">Sat &ndash; Sun: 7:30am &ndash; 6:00pm</p>
+          <ShopHours tone="dark" className="opacity-90" />
         </div>
         <div>
           <p className="font-mono uppercase text-xs tracking-widest opacity-60 mb-2">Get in touch</p>

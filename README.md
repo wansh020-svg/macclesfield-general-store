@@ -34,7 +34,8 @@ or type change happens in one place instead of hunting through every page.
 
 ## What's real vs. placeholder
 
-- Address, phone, and hours came from public listings (Facebook, Zmenu,
+- Dine-in hours live in `lib/site.js` (one place; they feed the footer, Contact page, the "open now" pill, the
+  poster and Google). Delivery times live in Dashboard > Settings. The original address, phone and hours came from public listings (Facebook, Zmenu,
   Top-Rated) — worth double-checking against the till/roster before publishing.
 - The menu page has **placeholder** category names and no real prices —
   replace `app/menu/page.js` with the actual menu.

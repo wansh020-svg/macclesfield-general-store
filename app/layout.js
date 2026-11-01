@@ -4,6 +4,9 @@ import Footer from "@/components/Footer";
 import TabBar from "@/components/TabBar";
 import Chrome from "@/components/Chrome";
 import SourceTracker from "@/components/SourceTracker";
+import { DeliveryProvider } from "@/components/DeliveryContext";
+import { DAY_NAMES, storeWindows } from "@/lib/hours";
+import { getDeliveryCached, publicDelivery } from "@/lib/db";
 import { SHOP, SITE_URL } from "@/lib/site";
 import { CartProvider } from "@/components/CartContext";
 import "@fontsource-variable/fraunces";
@@ -12,6 +15,10 @@ import "@fontsource/work-sans/500.css";
 import "@fontsource/work-sans/600.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
+
+// Delivery times and hours are read per request, so changes in Dashboard > Settings show straight away
+// (otherwise Next would bake the build-time defaults into every page).
+export const dynamic = "force-dynamic";
 
 const TITLE = "Macclesfield General Store | Order online, delivered to your door";
 const DESCRIPTION =
@@ -39,6 +46,16 @@ export const metadata = {
   },
 };
 
+// One entry per group of days that share the same opening hours.
+function storeHoursSpec() {
+  const groups = {};
+  storeWindows().forEach((w, d) => {
+    if (!w) return;
+    (groups[`${w.open}-${w.close}`] ||= { w, days: [] }).days.push(DAY_NAMES[d]);
+  });
+  return Object.values(groups).map(({ w, days }) => ({ "@type": "OpeningHoursSpecification", dayOfWeek: days, opens: w.open, closes: w.close }));
+}
+
 // Lets Google show the shop's details properly (address, phone, hours, ordering link).
 const BUSINESS = {
   "@context": "https://schema.org",
@@ -56,20 +73,24 @@ const BUSINESS = {
     postalCode: SHOP.postcode,
     addressCountry: "AU",
   },
-  openingHoursSpecification: [
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], opens: "06:30", closes: "18:30" },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Saturday", "Sunday"], opens: "07:30", closes: "18:00" },
-  ],
+  openingHoursSpecification: storeHoursSpec(),
   potentialAction: { "@type": "OrderAction", target: `${SITE_URL}/order`, deliveryMethod: "http://purl.org/goodrelations/v1#DeliveryModeOwnFleet" },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  let delivery = null;
+  try {
+    delivery = publicDelivery(await getDeliveryCached());
+  } catch (err) {
+    console.error("Delivery settings unavailable:", err.message); // pages fall back to the default times
+  }
   return (
     <html lang="en">
       <body
         className={`font-body bg-canvas text-ink pb-16 md:pb-0`}
       >
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(BUSINESS) }} />
+        <DeliveryProvider delivery={delivery} serverNow={Date.now()}>
         <CartProvider>
           <SourceTracker />
           <Chrome><Nav /></Chrome>
@@ -77,6 +98,7 @@ export default function RootLayout({ children }) {
           <Chrome><Footer /></Chrome>
           <TabBar />
         </CartProvider>
+        </DeliveryProvider>
       </body>
     </html>
   );

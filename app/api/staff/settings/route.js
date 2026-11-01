@@ -4,7 +4,7 @@ import { findAddress, getDelivery, saveDelivery } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 const STORE_ADDRESS = "32 Venables St, Macclesfield SA 5153";
-const KNOWN = /^(Radius|That location)/;
+const KNOWN = /^(Radius|That location|Delivery)/;
 
 async function guard() {
   return (await isStaff()) ? null : NextResponse.json({ error: "Unauthorized" }, { status: 401 });

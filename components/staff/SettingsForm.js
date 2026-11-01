@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DAY_NAMES, describeWindows } from "@/lib/hours";
 import { btn, input, Label } from "@/components/staff/Bits";
 
 async function save(body) {
@@ -21,9 +22,11 @@ async function save(body) {
 export default function SettingsForm({ initial }) {
   const [d, setD] = useState(initial);
   const [radius, setRadius] = useState(String(initial.radiusKm));
+  const [schedule, setSchedule] = useState(initial.schedule);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // Returns true if it saved. Anything that failed shows its message and leaves the form as it was.
   async function run(body, ok) {
     setBusy(true);
     setMsg("");
@@ -31,9 +34,12 @@ export default function SettingsForm({ initial }) {
       const data = await save(body);
       setD(data.delivery);
       setRadius(String(data.delivery.radiusKm));
+      setSchedule(data.delivery.schedule);
       setMsg(ok(data));
+      return true;
     } catch (e) {
       setMsg(e.message);
+      return false;
     } finally {
       setBusy(false);
     }
@@ -49,12 +55,65 @@ export default function SettingsForm({ initial }) {
     );
   }
 
+  const setDay = (i, patch) => setSchedule((sc) => sc.map((w, d) => (d === i ? (patch === null ? null : { ...(w || { open: "16:00", close: "20:00" }), ...patch }) : w)));
+  const summary = describeWindows(schedule).map((l) => l.text).join(" and ") || "no deliveries";
+
   return (
     <div className="space-y-6">
       <section className="rounded-3xl border-2 border-ink/15 bg-canvas-light p-5 space-y-4">
+        <h2 className="font-display font-900 text-xl">Delivery times</h2>
+        <fieldset className="space-y-2">
+          <legend className="font-mono text-xs uppercase tracking-widest text-ink/60 mb-1">Online ordering is</legend>
+          {[
+            ["schedule", "Following the weekly times below"],
+            ["open", "Open now (ignores the times, until you switch it back)"],
+            ["closed", "Paused (no orders, even in delivery times)"],
+          ].map(([value, label]) => (
+            <label key={value} className="flex items-start gap-3">
+              <input type="radio" name="mode" className="mt-1.5 w-4 h-4" checked={d.mode === value} disabled={busy}
+                onChange={async () => {
+                  const before = d;
+                  setD({ ...d, mode: value }); // move the switch straight away
+                  if (!(await run({ mode: value }, () => "Saved."))) setD(before);
+                }} />
+              <span>{label}</span>
+            </label>
+          ))}
+        </fieldset>
+        <div className="space-y-2">
+          <p className="font-mono text-xs uppercase tracking-widest text-ink/60">Weekly delivery times (Adelaide time)</p>
+          {DAY_NAMES.map((name, i) => (
+            <div key={name} className="flex flex-wrap items-center gap-3">
+              <label className="flex items-center gap-2 w-32">
+                <input type="checkbox" className="w-4 h-4" checked={Boolean(schedule[i])} onChange={(e) => setDay(i, e.target.checked ? {} : null)} />
+                {name}
+              </label>
+              {schedule[i] ? (
+                <span className="flex items-center gap-2">
+                  <input type="time" className={`${input} w-32`} value={schedule[i].open} onChange={(e) => setDay(i, { open: e.target.value })} aria-label={`${name} opens`} />
+                  <span>to</span>
+                  <input type="time" className={`${input} w-32`} value={schedule[i].close} onChange={(e) => setDay(i, { close: e.target.value })} aria-label={`${name} closes`} />
+                </span>
+              ) : (
+                <span className="text-ink/50 text-sm">No delivery</span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <button disabled={busy} onClick={() => run({ schedule }, () => "Delivery times saved. The website updates within a minute.")} className={`${btn} bg-rust text-canvas-light`}>Save times</button>
+          <span className="text-sm text-ink/60">Customers will see: {summary}</span>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border-2 border-ink/15 bg-canvas-light p-5 space-y-4">
         <h2 className="font-display font-900 text-xl">Delivery area</h2>
         <label className="flex items-center gap-3">
-          <input type="checkbox" checked={d.enforce} disabled={busy} onChange={(e) => run({ enforce: e.target.checked }, () => "Saved.")} className="w-5 h-5" />
+          <input type="checkbox" checked={d.enforce} disabled={busy} onChange={async (e) => {
+            const before = d;
+            setD({ ...d, enforce: e.target.checked });
+            if (!(await run({ enforce: e.target.checked }, () => "Saved."))) setD(before);
+          }} className="w-5 h-5" />
           <span>Only deliver within the radius</span>
         </label>
         <Label text="Radius (km)" hint="Straight-line distance from the store. Roads can be longer, so a little under your real limit is safer.">

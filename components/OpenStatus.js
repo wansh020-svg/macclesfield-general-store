@@ -1,25 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { storeState } from "@/lib/hours";
 
-// Same hours as the footer: Mon-Fri 6:30-18:30, Sat-Sun 7:30-18:00 (Adelaide time).
-const WEEKDAY = { open: 6 * 60 + 30, close: 18 * 60 + 30 };
-const WEEKEND = { open: 7 * 60 + 30, close: 18 * 60 };
-
-function clockText(mins) {
-  const h = Math.floor(mins / 60), m = mins % 60;
-  return `${((h + 11) % 12) + 1}${m ? `:${String(m).padStart(2, "0")}` : ""}${h >= 12 ? "pm" : "am"}`;
-}
-
+// Is the shop open for dine-in right now? (Hours live in lib/site.js; Adelaide time.)
 function status() {
-  const parts = new Intl.DateTimeFormat("en-AU", {
-    timeZone: "Australia/Adelaide", weekday: "short", hour: "numeric", minute: "numeric", hourCycle: "h23",
-  }).formatToParts(new Date());
-  const get = (t) => parts.find((p) => p.type === t)?.value;
-  const mins = (Number(get("hour")) % 24) * 60 + Number(get("minute"));
-  const h = ["Sat", "Sun"].includes(get("weekday")) ? WEEKEND : WEEKDAY;
-  if (mins >= h.open && mins < h.close) return { open: true, text: `Open now · until ${clockText(h.close)}` };
-  return { open: false, text: mins < h.open ? `Closed · opens ${clockText(h.open)}` : "Closed for today" };
+  const s = storeState();
+  if (s.open) return { open: true, text: `Open now \u00b7 until ${s.closesAt}` };
+  return { open: false, text: s.next ? `Closed \u00b7 opens ${s.next.text}` : "Closed" };
 }
 
 export default function OpenStatus() {

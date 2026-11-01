@@ -1,3 +1,7 @@
+import ShopHours from "@/components/ShopHours";
+
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Visit Us | Macclesfield General Store",
 };
@@ -21,11 +25,7 @@ export default function ContactPage() {
           </p>
           <p className="text-lg mb-6">(08) 8188 5301</p>
 
-          <p className="font-mono uppercase text-xs tracking-widest text-ink/50 mb-3">
-            Hours
-          </p>
-          <p className="text-ink/80">Mon &ndash; Fri: 6:30am &ndash; 6:30pm</p>
-          <p className="text-ink/80">Sat &ndash; Sun: 7:30am &ndash; 6:00pm</p>
+          <ShopHours className="text-ink/80" />
         </div>
 
         <div className="aspect-[4/3] w-full border border-ink/10">

@@ -1,8 +1,11 @@
 import Link from "next/link";
 import OpenStatus from "@/components/OpenStatus";
+import DeliveryStatus from "@/components/DeliveryStatus";
+import ShopHours from "@/components/ShopHours";
 import CartBar from "@/components/CartBar";
 import { DealBanner, DealCard, Row } from "@/components/Cards";
-import { getDeals, getMenu } from "@/lib/db";
+import { getDeals, getDeliveryCached, getMenu } from "@/lib/db";
+import { DEFAULT_SCHEDULE, describeWindows } from "@/lib/hours";
 import { slug } from "@/lib/format";
 import { toneAt } from "@/lib/tones";
 
@@ -26,6 +29,13 @@ const STEPS = [
 export default async function Home() {
   const [deals, divisions] = await Promise.all([safe(getDeals), safe(getMenu)]);
   const [headline, ...moreDeals] = deals;
+  let schedule = DEFAULT_SCHEDULE;
+  try {
+    schedule = (await getDeliveryCached()).schedule;
+  } catch {
+    // default delivery times
+  }
+  const deliveryText = describeWindows(schedule).map((l) => l.text).join(" and ") || "set times";
 
   return (
     <div className="pb-28">
@@ -46,7 +56,8 @@ export default async function Home() {
           <p className="mt-4 text-canvas-light/80 text-lg max-w-md">
             Coffee, brekkie, burgers and proper Punjabi curries from Macclesfield&apos;s own general store.
           </p>
-          <div className="mt-7 flex flex-wrap items-center gap-4">
+          <DeliveryStatus variant="chip" className="mt-5" />
+          <div className="mt-6 flex flex-wrap items-center gap-4">
             <Link
               href="/order"
               className="rounded-full bg-gold text-ink font-display font-900 text-xl px-9 py-4 active:scale-95 transition-transform"
@@ -62,7 +73,7 @@ export default async function Home() {
 
       <div className="bg-gold text-ink overflow-x-auto [scrollbar-width:none]">
         <p className="flex gap-6 whitespace-nowrap px-5 py-3 font-display font-900 text-sm uppercase tracking-wide justify-center">
-          <span>Open 7 days</span><span aria-hidden="true">&bull;</span>
+          <span>Delivery {deliveryText}</span><span aria-hidden="true">&bull;</span>
           <span>Dine-in &amp; takeaway</span><span aria-hidden="true">&bull;</span>
           <span>Cash on delivery</span>
         </p>
@@ -121,8 +132,7 @@ export default async function Home() {
             <h2 className="font-display font-900 text-3xl uppercase tracking-tight">Find us</h2>
             <p className="mt-3 text-canvas-light/80">32 Venables St, Macclesfield SA 5153</p>
             <a href="tel:0881885301" className="inline-block mt-1 font-display font-900 text-2xl text-gold">(08) 8188 5301</a>
-            <p className="mt-4 text-sm text-canvas-light/70">Mon &ndash; Fri 6:30am &ndash; 6:30pm</p>
-            <p className="text-sm text-canvas-light/70">Sat &ndash; Sun 7:30am &ndash; 6:00pm</p>
+            <ShopHours tone="dark" className="mt-4 text-sm text-canvas-light/80" />
             <div className="mt-5 flex gap-5 font-display font-700">
               <Link href="/store" className="underline underline-offset-4 decoration-gold">In the store</Link>
               <Link href="/contact" className="underline underline-offset-4 decoration-gold">Visit us</Link>

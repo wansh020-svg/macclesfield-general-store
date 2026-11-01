@@ -1,6 +1,7 @@
 "use client";
 
 import { useCart } from "@/components/CartContext";
+import { useDelivery } from "@/components/DeliveryContext";
 import { money } from "@/lib/format";
 import { toneAt } from "@/lib/tones";
 
@@ -44,6 +45,7 @@ function Stepper({ qty, label, tone, onMinus, onPlus, compact = false }) {
 // compact = small round buttons, used for the several size options on one card.
 function AddControl({ line, label, tone, compact = false }) {
   const { items, addItem, updateQty } = useCart();
+  const { open } = useDelivery();
   const qty = items.find((i) => i.key === line.key)?.qty || 0;
 
   if (qty > 0) {
@@ -52,6 +54,14 @@ function AddControl({ line, label, tone, compact = false }) {
         qty={qty} label={label} tone={tone} compact={compact}
         onMinus={() => updateQty(line.key, qty - 1)} onPlus={() => addItem(line)}
       />
+    );
+  }
+  if (!open) {
+    // not delivering right now: browsing is fine, adding isn't
+    return compact ? (
+      <button disabled aria-label={`${label}: not delivering right now`} className="shrink-0 w-9 h-9 rounded-full bg-ink/10 text-ink/30 text-xl leading-none">+</button>
+    ) : (
+      <button disabled aria-label={`${label}: not delivering right now`} className="w-full rounded-full h-11 bg-ink/10 text-ink/40 font-display font-900 text-base">Closed</button>
     );
   }
   return compact ? (
@@ -164,6 +174,7 @@ export function DealCard({ deal, tone = 2 }) {
 // The headline deal: one big gold banner at the top of Home.
 export function DealBanner({ deal }) {
   const { items, addItem, updateQty } = useCart();
+  const { open } = useDelivery();
   const key = `d${deal.id}`;
   const qty = items.find((i) => i.key === key)?.qty || 0;
   const line = { dealId: deal.id, key, name: `Deal: ${deal.title}`, price: deal.price };
@@ -192,10 +203,10 @@ export function DealBanner({ deal }) {
                 </div>
               ) : (
                 <button
-                  onClick={() => addItem(line)} aria-label={`Add ${deal.title}`}
-                  className="rounded-full bg-ink text-gold font-display font-900 text-lg px-8 h-12 active:scale-95 transition-transform"
+                  disabled={!open} onClick={() => addItem(line)} aria-label={open ? `Add ${deal.title}` : `${deal.title}: not delivering right now`}
+                  className="rounded-full bg-ink text-gold font-display font-900 text-lg px-8 h-12 active:scale-95 transition-transform disabled:opacity-40 disabled:active:scale-100"
                 >
-                  Add
+                  {open ? "Add" : "Closed"}
                 </button>
               )}
             </div>

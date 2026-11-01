@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AddressField from "@/components/AddressField";
 import { useCart } from "@/components/CartContext";
+import DeliveryStatus from "@/components/DeliveryStatus";
+import { useDelivery } from "@/components/DeliveryContext";
 import { money } from "@/lib/format";
 import { loadProfile, rememberOrder, saveProfile } from "@/lib/local";
 import { readSource } from "@/components/SourceTracker";
@@ -12,6 +14,7 @@ const field = "w-full rounded-2xl border-2 border-ink/15 bg-canvas-light px-4 py
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
+  const { open: delivering } = useDelivery();
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
   const [chosen, setChosen] = useState(null);
   const [unverified, setUnverified] = useState(false);
@@ -92,6 +95,8 @@ export default function CheckoutPage() {
         Cash on delivery: <span className="font-display font-900 text-ink">{money(total)}</span>. No card needed.
       </p>
 
+      {!delivering && <DeliveryStatus className="mt-5" />}
+
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
         <input type="text" placeholder="Full name" autoComplete="name" value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })} className={field} />
@@ -115,9 +120,9 @@ export default function CheckoutPage() {
           Remember my details on this phone
         </label>
         {error && <p role="alert" className="rounded-2xl bg-rust/10 text-rust px-4 py-3 text-sm">{error}</p>}
-        <button type="submit" disabled={submitting || !addressReady}
+        <button type="submit" disabled={submitting || !addressReady || !delivering}
           className="w-full rounded-full bg-rust text-canvas-light font-display font-900 text-xl h-14 disabled:opacity-50 active:scale-95 transition-transform">
-          {submitting ? "Placing order..." : addressReady ? "Place order" : "Check your address to continue"}
+          {submitting ? "Placing order..." : !delivering ? "Not delivering right now" : addressReady ? "Place order" : "Check your address to continue"}
         </button>
       </form>
     </section>

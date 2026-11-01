@@ -1,5 +1,7 @@
 import PrintBar from "@/components/PrintBar";
 import { isLight, printTheme } from "@/lib/printTheme";
+import { deliveryText } from "@/lib/hours";
+import { printDelivery } from "@/lib/printDelivery";
 import { qrSvg } from "@/lib/qr";
 import { SHOP, SITE_URL } from "@/lib/site";
 
@@ -9,7 +11,7 @@ export const dynamic = "force-dynamic";
 const clean = (v) => String(v || "").replace(/[<>]/g, "").slice(0, 60);
 
 // One half of a table tent (210 x 74 mm).
-function Panel({ qr, shown, offer, t, flip }) {
+function Panel({ qr, shown, offer, t, flip, when }) {
   return (
     <div
       className={`${t.page} flex items-center`}
@@ -23,9 +25,8 @@ function Panel({ qr, shown, offer, t, flip }) {
         ) : (
           <p className={t.sub} style={{ fontSize: "4mm", marginTop: "3mm" }}>Order online and pay cash when it arrives.</p>
         )}
-        <p className={t.sub} style={{ fontSize: "3.4mm", marginTop: "3mm" }}>
-          <span className={`font-mono ${t.accent}`}>{shown}</span> &nbsp;&middot;&nbsp; {SHOP.phone}
-        </p>
+        <p className={t.sub} style={{ fontSize: "3.6mm", marginTop: "3mm" }}>Delivery {when} &nbsp;&middot;&nbsp; {SHOP.phone}</p>
+        <p className={`font-mono ${t.accent}`} style={{ fontSize: "3.4mm", marginTop: "1mm" }}>{shown}</p>
       </div>
       <div className="text-center shrink-0">
         <div className={`${t.qrTile} rounded-2xl`} style={{ padding: "3.5mm", width: "40mm", height: "40mm" }}>
@@ -43,6 +44,7 @@ export default async function TableCardPage({ searchParams }) {
   const offer = clean(searchParams?.offer);
   const light = isLight(searchParams?.light);
   const t = printTheme(light);
+  const when = deliveryText(await printDelivery());
   const link = `${SITE_URL}/order?src=table`;
   const shown = link.replace(/^https?:\/\/(www\.)?/, "").replace(/\?.*$/, "");
   const qr = await qrSvg(link);
@@ -56,9 +58,9 @@ export default async function TableCardPage({ searchParams }) {
         <div className="mx-auto bg-white shadow-xl print:shadow-none" style={{ width: "210mm", height: "297mm" }}>
           {[0, 1].map((i) => (
             <div key={i} style={{ height: "148.5mm", outline: "0.3mm dashed #999", outlineOffset: "-0.15mm" }}>
-              <Panel qr={qr} shown={shown} offer={offer} t={t} flip />
+              <Panel qr={qr} shown={shown} offer={offer} t={t} when={when} flip />
               <div style={{ borderTop: "0.3mm dashed #777" }} />
-              <Panel qr={qr} shown={shown} offer={offer} t={t} />
+              <Panel qr={qr} shown={shown} offer={offer} t={t} when={when} />
             </div>
           ))}
         </div>
