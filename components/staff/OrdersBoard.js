@@ -45,6 +45,16 @@ function OrderCard({ order, now, onStatus }) {
       <p className="mt-1">
         <a href={`tel:${order.phone}`} className="underline underline-offset-4 decoration-gold">{order.phone}</a>
       </p>
+      {order.address_status === "unverified" && (
+        <p className="mt-2 inline-block rounded-full bg-rust text-canvas-light px-3 py-1 font-mono text-[11px] uppercase tracking-widest">
+          Address not checked: call to confirm
+        </p>
+      )}
+      {order.address_status === "verified" && order.distance_km != null && (
+        <p className="mt-2 inline-block rounded-full bg-sage/20 text-sage px-3 py-1 font-mono text-[11px] uppercase tracking-widest">
+          {order.distance_km} km away
+        </p>
+      )}
       <p className="mt-1">
         <a href={`https://maps.google.com/?q=${encodeURIComponent(order.address)}`} target="_blank" rel="noreferrer" className="underline underline-offset-4 decoration-gold">
           {order.address}

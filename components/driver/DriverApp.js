@@ -12,7 +12,8 @@ const big = "rounded-full font-display font-900 text-lg h-14 px-6 active:scale-9
 function MineCard({ order, busy, onAction }) {
   const [confirming, setConfirming] = useState(false);
   const [cash, setCash] = useState(String(order.estimated_total));
-  const dest = encodeURIComponent(order.address);
+  // Verified orders navigate to the exact checked spot; unchecked ones fall back to the typed address.
+  const dest = order.lat != null && order.lng != null ? `${order.lat},${order.lng}` : encodeURIComponent(order.address);
   return (
     <article className="rounded-3xl bg-canvas text-ink p-5">
       <div className="flex items-baseline justify-between gap-3">

@@ -8,6 +8,7 @@ const tabs = [
   { href: "/dashboard/menu", label: "Menu" },
   { href: "/dashboard/deals", label: "Deals" },
   { href: "/dashboard/drivers", label: "Drivers" },
+  { href: "/dashboard/settings", label: "Settings" },
 ];
 
 export default function DashNav() {

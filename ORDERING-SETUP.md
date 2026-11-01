@@ -114,3 +114,22 @@ placed the order can open it.
 
 **Not included yet:** live driver location on a map, and push notifications while the
 phone is locked. On iPhones a web app can't track location or refresh in the background.
+
+## Delivery area and address checking
+
+At checkout the customer types their address and taps **Check address**. The site looks it up
+(free OpenStreetMap data), shows the matches with their distance from the store, and only
+lets them order from one that is inside the radius. Distance is a straight line from the
+store, and the server re-checks it when the order is placed, so it can't be faked.
+
+- **Dashboard > Settings:** set the radius (default 5 km), switch the limit on or off, and set
+  the store's exact location. Best: open Settings on a phone while standing in the shop and
+  tap **Use this device's location**. Until then it uses an approximate spot in Macclesfield.
+- If an address can't be found (the free map data is thin in some rural areas) the customer
+  can tap **My address isn't listed. Continue anyway**. Those orders show a red
+  **Address not checked: call to confirm** badge for staff. Checked orders show their distance.
+- The lookup only happens when the customer taps the button (the free service doesn't allow
+  search-as-you-type), results are remembered for 30 days, and each person is limited to 20
+  checks per 10 minutes.
+- Drivers' Google/Apple Maps buttons use the exact checked location when there is one.
+- To switch to Google later, only `lookupAddress()` in `lib/geo.js` needs to change.
