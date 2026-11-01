@@ -70,6 +70,9 @@ export default function ProfilePage() {
               </p>
               <div className="mt-3 flex items-center justify-between">
                 <span className="font-mono">{money(o.total)}</span>
+                {o.token && (
+                  <Link href={`/track/${o.token}`} className="font-mono text-xs uppercase tracking-widest underline">Track</Link>
+                )}
                 <button onClick={() => reorder(o)} className="rounded-full bg-pine text-canvas-light font-mono text-xs uppercase tracking-widest px-5 py-2">
                   Reorder
                 </button>

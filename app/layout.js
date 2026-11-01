@@ -2,6 +2,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import TabBar from "@/components/TabBar";
+import Chrome from "@/components/Chrome";
 import { CartProvider } from "@/components/CartContext";
 import "@fontsource-variable/fraunces";
 import "@fontsource/work-sans/400.css";
@@ -23,9 +24,9 @@ export default function RootLayout({ children }) {
         className={`font-body bg-canvas text-ink pb-16 md:pb-0`}
       >
         <CartProvider>
-          <Nav />
+          <Chrome><Nav /></Chrome>
           <main>{children}</main>
-          <Footer />
+          <Chrome><Footer /></Chrome>
           <TabBar />
         </CartProvider>
       </body>

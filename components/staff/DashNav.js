@@ -7,6 +7,7 @@ const tabs = [
   { href: "/dashboard", label: "Orders" },
   { href: "/dashboard/menu", label: "Menu" },
   { href: "/dashboard/deals", label: "Deals" },
+  { href: "/dashboard/drivers", label: "Drivers" },
 ];
 
 export default function DashNav() {

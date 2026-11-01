@@ -87,3 +87,30 @@ starting menu. After that, **the dashboard is the source of truth**: editing
 
 Prices are always worked out on the server from the database, so a customer
 can't change what they pay by editing the page in their browser.
+
+
+## Live orders, drivers and tracking
+
+**Staff Orders screen.** It refreshes itself every few seconds. On each device that will
+be watching it (the counter tablet, a phone), tap **Turn on alerts** once: browsers don't
+allow sound until someone taps. It then chimes for every new order and repeats every 20
+seconds until the order is accepted or cancelled. Buttons: **Accept**, **Ready**,
+**Cancel**; the driver does the rest, and staff can use **Mark delivered** as a fallback.
+
+**Drivers.** In **Dashboard > Drivers**, add each driver with a name and a 4 to 8 digit PIN.
+Drivers open `yoursite.com/driver`, sign in, and tap **Start shift** (turns on the chime
+and keeps the screen awake). On an iPhone: Safari > Share > **Add to Home Screen**, and it
+opens like an app.
+- A driver only sees the area (not the street, name or phone) until they tap **Pick up**.
+- They then get directions links, a call button, the items, the notes and the cash to collect.
+- **Delivered** asks how much cash they collected; if it's different from the order total,
+  staff see it highlighted in red.
+- **Switch off** in the Drivers tab signs a driver out immediately. **Reset PIN** replaces a PIN.
+- Five wrong PINs lock that name (and that network address) out for 10 minutes.
+
+**Customer tracking.** After checkout the customer gets a **Track your order** link (also
+under Profile > Past orders). The link contains a long random code, so only the person who
+placed the order can open it.
+
+**Not included yet:** live driver location on a map, and push notifications while the
+phone is locked. On iPhones a web app can't track location or refresh in the background.

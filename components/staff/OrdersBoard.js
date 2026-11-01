@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LABEL, isDone } from "@/lib/orderStatus";
 import { money } from "@/lib/format";
+import { chime } from "@/lib/chime";
 
 const POLL_VISIBLE = 8000;
 const POLL_HIDDEN = 30000;
@@ -24,23 +25,6 @@ function ago(iso, now) {
   if (mins < 60) return `${mins} min ago`;
   const h = Math.floor(mins / 60);
   return h < 24 ? `${h} h ${mins % 60} min ago` : new Date(iso).toLocaleDateString("en-AU");
-}
-
-// Two rising chimes, made in the browser so there is no sound file to host.
-function chime(ctx) {
-  const t = ctx.currentTime;
-  [880, 1175, 880, 1175].forEach((f, i) => {
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = "sine";
-    o.frequency.value = f;
-    g.gain.setValueAtTime(0.0001, t + i * 0.22);
-    g.gain.exponentialRampToValueAtTime(0.5, t + i * 0.22 + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.22 + 0.2);
-    o.connect(g).connect(ctx.destination);
-    o.start(t + i * 0.22);
-    o.stop(t + i * 0.22 + 0.22);
-  });
 }
 
 function OrderCard({ order, now, onStatus }) {
@@ -77,6 +61,15 @@ function OrderCard({ order, now, onStatus }) {
       </ul>
       {order.notes && <p className="mt-3 rounded-xl bg-ink/5 px-3 py-2 text-sm italic">Note: {order.notes}</p>}
       {order.status === "cancelled" && order.cancel_reason && <p className="mt-3 text-sm text-rust">Cancelled: {order.cancel_reason}</p>}
+      {order.status === "out_for_delivery" && order.driver_name && (
+        <p className="mt-3 text-sm font-700">On the road with {order.driver_name}</p>
+      )}
+      {order.status === "delivered" && order.driver_name && (
+        <p className={`mt-3 text-sm ${Number(order.cash_collected) !== Number(order.estimated_total) ? "text-rust font-700" : "text-ink/70"}`}>
+          Delivered by {order.driver_name}. Cash collected {money(order.cash_collected ?? 0)}
+          {Number(order.cash_collected) !== Number(order.estimated_total) && ` (order was ${money(order.estimated_total || 0)})`}
+        </p>
+      )}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <span className="font-display font-900 text-2xl">{money(order.estimated_total || 0)} <span className="font-mono text-xs uppercase tracking-widest text-ink/50">cash</span></span>

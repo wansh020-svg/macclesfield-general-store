@@ -46,11 +46,11 @@ export default function CheckoutPage() {
 
       if (remember) saveProfile(form);
       rememberOrder({
-        id: data.order.id, at: Date.now(), total: data.order.total,
+        id: data.order.id, token: data.order.token, at: Date.now(), total: data.order.total,
         items: items.map((i) => ({ key: i.key, name: i.name, price: i.price, qty: i.qty, itemId: i.itemId, dealId: i.dealId, size: i.size })),
       });
       clearCart();
-      router.push(`/checkout/success?id=${data.order.id}`);
+      router.push(`/checkout/success?id=${data.order.id}&t=${data.order.token}`);
     } catch (err) {
       setError(err.message && err.message !== "Failed to place order"
         ? err.message
