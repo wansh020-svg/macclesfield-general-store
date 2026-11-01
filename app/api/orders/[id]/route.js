@@ -1,17 +1,27 @@
 import { NextResponse } from "next/server";
-import { markOrderStatus } from "@/lib/db";
 import { isStaff } from "@/lib/auth";
+import { setOrderStatus } from "@/lib/db";
+import { STATUSES } from "@/lib/orderStatus";
 
 export async function PATCH(request, { params }) {
-  if (!(await isStaff())) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!(await isStaff())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { status } = await request.json();
-  const id = Number(params.id);
-  if (!Number.isInteger(id) || !["new", "fulfilled"].includes(status)) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
-  await markOrderStatus(id, status);
-  return NextResponse.json({ success: true });
+  const id = Number(params.id);
+  if (!Number.isInteger(id) || !STATUSES.includes(body.status)) {
+    return NextResponse.json({ error: "Bad request" }, { status: 400 });
+  }
+  try {
+    const found = await setOrderStatus(id, body.status, body.reason);
+    if (!found) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Could not update the order" }, { status: 500 });
+  }
 }
