@@ -3,8 +3,8 @@ import { allowHit, findAddress, getDelivery } from "@/lib/db";
 import { haversineKm } from "@/lib/geo";
 import { signAddressProof } from "@/lib/session";
 
-// The customer taps "Check address". We look it up once, work out the distance from
-// the store, and hand back a signed proof the order will carry.
+// Suggestions while the customer types their address. For each match we work out the distance
+// from the store and sign the location, so the order can carry proof the address was checked.
 export async function POST(request) {
   let body;
   try {
@@ -13,13 +13,13 @@ export async function POST(request) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
   const query = String(body.query || "").trim().slice(0, 150);
-  if (query.length < 6) return NextResponse.json({ error: "Type your street number, street and suburb." }, { status: 400 });
+  if (query.length < 4) return NextResponse.json({ results: [], radiusKm: null });
 
   const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
   try {
     // The free map service is shared, so keep one person from hammering it.
-    if (!(await allowHit(`addr:${ip}`, 20, 10))) {
-      return NextResponse.json({ error: "Too many address checks. Wait a few minutes, or call the store.", canSkip: true }, { status: 429 });
+    if (!(await allowHit(`addr:${ip}`, 120, 10))) {
+      return NextResponse.json({ error: "Too many address searches. Wait a few minutes, or call the store.", canSkip: true }, { status: 429 });
     }
     const here = await getDelivery();
     const { results } = await findAddress(query);
