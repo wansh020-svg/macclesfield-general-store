@@ -1,5 +1,25 @@
+# dependencies and build output
 node_modules
 .next
 out
-.env*.local
+coverage
+*.tsbuildinfo
+next-env.d.ts
+
+# secrets: never commit these (passwords, database URLs, API keys live in Vercel)
+.env
+.env.*
+!.env.example
+
+# Vercel CLI link and local settings
+.vercel
+
+# logs
+*.log
+npm-debug.log*
+
+# editor and OS files
 .DS_Store
+Thumbs.db
+.idea
+.vscode
