@@ -138,8 +138,10 @@ can't be faked.
 
 ## Advertising: posters, flyers and link previews
 
-- **`/poster`** is a printable A4 poster with a QR code to the ordering page; **`/flyer`** is a
-  sheet of four cut-out cards (for bags and letterbox drops). Open them on a computer, type an
+- **`/poster`** is a printable A4 poster with a QR code to the ordering page (for the window);
+  **`/flyer`** is a sheet of four cut-out cards (for bags and letterbox drops); **`/tablecard`**
+  is a sheet of two table tents (cut, fold, stand up). Each has an **Ink saver** tick box for a
+  light-background version that is cheaper to print. Open them on a computer, type an
   optional offer line (for example the launch offer) and press **Update**, then **Print**
   (A4, margins "None", background graphics on). They don't show the website's menu or footer.
 - The QR codes carry a tag (`?src=poster`, `?src=flyer`). When someone orders after scanning one,
