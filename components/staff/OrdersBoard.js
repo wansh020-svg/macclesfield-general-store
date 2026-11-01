@@ -34,7 +34,9 @@ function OrderCard({ order, now, onStatus }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-display font-900 text-2xl leading-none">Order #{order.id}</p>
-          <p className="font-mono text-xs uppercase tracking-widest text-ink/50 mt-1">{ago(order.created_at, now)}</p>
+          <p className="font-mono text-xs uppercase tracking-widest text-ink/50 mt-1">
+            {ago(order.created_at, now)}{order.source ? ` · via ${order.source}` : ""}
+          </p>
         </div>
         <span className={`rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-widest ${PILL[order.status] || PILL.delivered}`}>
           {LABEL[order.status] || order.status}

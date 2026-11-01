@@ -19,6 +19,8 @@ export async function POST(request) {
   const address = clip(body.address, 200);
   const notes = clip(body.notes, 500);
   const lines = Array.isArray(body.items) ? body.items.slice(0, 40) : [];
+  // where the customer came from (poster, flyer...): optional and only simple words are kept
+  const source = /^[a-z0-9_-]{1,20}$/i.test(String(body.source || "")) ? String(body.source).toLowerCase() : null;
 
   if (!customerName || !phone || !address || lines.length === 0) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -64,7 +66,7 @@ export async function POST(request) {
 
   try {
     const order = await createOrder({
-      customerName, phone, address, notes, items: priced.items, estimatedTotal: priced.total, place,
+      customerName, phone, address, notes, items: priced.items, estimatedTotal: priced.total, place, source,
     });
     return NextResponse.json({
       success: true,

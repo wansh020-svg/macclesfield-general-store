@@ -135,3 +135,21 @@ can't be faked.
   asks for fair use and promises no uptime; if it ever struggles, switch to Google.
 - Drivers' Google/Apple Maps buttons use the exact checked location when there is one.
 - To switch to Google later, only `lookupAddress()` in `lib/geo.js` needs to change.
+
+## Advertising: posters, flyers and link previews
+
+- **`/poster`** is a printable A4 poster with a QR code to the ordering page; **`/flyer`** is a
+  sheet of four cut-out cards (for bags and letterbox drops). Open them on a computer, type an
+  optional offer line (for example the launch offer) and press **Update**, then **Print**
+  (A4, margins "None", background graphics on). They don't show the website's menu or footer.
+- The QR codes carry a tag (`?src=poster`, `?src=flyer`). When someone orders after scanning one,
+  the staff Orders screen shows **via poster** / **via flyer** on that order, so you can see what
+  worked. For your own links, add a tag the same way, for example `yoursite.com.au/?src=facebook`
+  (letters, numbers, dashes only).
+- **Link previews:** when the site address is shared on Facebook, Messenger, WhatsApp or iMessage
+  it shows the shopfront photo and "Hungry? We'll bring it over." The picture is `public/og.jpg`
+  (1200 x 630). Facebook remembers old previews: after the first share, paste the link into
+  Facebook's Sharing Debugger and press "Scrape Again" if it looks wrong.
+- The site also tells Google its address, phone, opening hours and ordering link.
+- Set `SITE_URL` in Vercel only if the main address ever changes from
+  `www.macclesfieldgeneralstore.com.au`.

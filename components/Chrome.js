@@ -4,5 +4,6 @@ import { usePathname } from "next/navigation";
 
 // Hides the customer site's navigation and footer on the driver app.
 export default function Chrome({ children }) {
-  return usePathname()?.startsWith("/driver") ? null : children;
+  const path = usePathname() || "";
+  return ["/driver", "/poster", "/flyer"].some((p) => path.startsWith(p)) ? null : children;
 }

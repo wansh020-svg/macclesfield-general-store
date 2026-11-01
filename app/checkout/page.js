@@ -6,6 +6,7 @@ import AddressField from "@/components/AddressField";
 import { useCart } from "@/components/CartContext";
 import { money } from "@/lib/format";
 import { loadProfile, rememberOrder, saveProfile } from "@/lib/local";
+import { readSource } from "@/components/SourceTracker";
 
 const field = "w-full rounded-2xl border-2 border-ink/15 bg-canvas-light px-4 py-3 text-base focus:border-pine outline-none";
 
@@ -51,6 +52,7 @@ export default function CheckoutPage() {
           address: form.address,
           addressProof: chosen?.proof,
           unverified,
+          source: readSource(),
           notes: form.notes,
           items: items.map((i) => ({ itemId: i.itemId, dealId: i.dealId, size: i.size, qty: i.qty })),
         }),
