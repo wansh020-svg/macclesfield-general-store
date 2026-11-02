@@ -311,3 +311,10 @@ message and the open runs. Customers can book any run for today, from the mornin
   and **Large order** at or over an amount you set in **Dashboard > Settings > Flag orders over ($)**
   (default $100, 0 turns it off).
 - **No cash cap** on delivery orders, as decided.
+
+## "Do we deliver to you?" page
+
+`/delivery-area` lets anyone type their address and see Yes (with the next delivery time and an Order now button)
+or Sorry (with the distance, and a pickup button). It is linked in the site footer and is meant for posts, e.g.
+`macclesfieldgeneralstore.com.au/delivery-area?src=facebook`. Only the answer and a rough distance are counted (never the
+address): see **Dashboard > Settings** for the last 7 days, including how many were just outside your radius.

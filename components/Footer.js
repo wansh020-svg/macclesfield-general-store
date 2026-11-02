@@ -14,6 +14,7 @@ export default function Footer() {
         <div>
           <p className="font-mono uppercase text-xs tracking-widest opacity-60 mb-2">Get in touch</p>
           <p className="opacity-80">(08) 8188 5301</p>
+          <p className="mt-3"><a href="/delivery-area" className="underline underline-offset-4 decoration-gold opacity-90">Do we deliver to you?</a></p>
         </div>
       </div>
       <div className="border-t border-white/10 px-5 py-4 text-center text-xs opacity-50 font-mono">
