@@ -66,6 +66,11 @@ export default function TrackOrder({ token }) {
   return (
     <main className="max-w-md mx-auto px-5 pt-10 pb-24">
       <p className="font-mono text-xs uppercase tracking-widest text-ink/50">{pickup ? "Pickup" : "Delivery"} order #{order.id}</p>
+      {!pickup && order.run && !cancelled && !finished && (
+        <p className="mt-3 rounded-2xl bg-gold/40 px-4 py-2 text-sm font-display font-700">
+          Delivery run: leaves {order.run.delay ? order.run.departs : order.run.label}{order.run.delay ? ` (delayed ${order.run.delay} min)` : ""}. Arrives about {order.run.arrives}.
+        </p>
+      )}
       <h1 className="font-display font-900 text-4xl leading-none mt-2">
         {cancelled ? "Order cancelled" : steps[current].title}
       </h1>

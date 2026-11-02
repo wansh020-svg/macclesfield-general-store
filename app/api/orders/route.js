@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isStaff } from "@/lib/auth";
-import { allowHit, createOrder, digitsOf, getDelivery, getOrders, getPickup, isPhoneBlocked, orderByClientKey, priceCart, waitingOrdersFor } from "@/lib/db";
+import { adelaideDate } from "@/lib/runs";
+import { allowHit, createOrder, getRunBoard, digitsOf, getDelivery, getOrders, getPickup, isPhoneBlocked, orderByClientKey, priceCart, waitingOrdersFor } from "@/lib/db";
 import { smsConfigured, textStaff } from "@/lib/sms";
 import { haversineKm } from "@/lib/geo";
 import { describeWindows, pickupState, serviceState } from "@/lib/hours";
@@ -78,8 +79,16 @@ export async function POST(request) {
     console.error(err);
     return NextResponse.json({ error: "Failed to place order" }, { status: 500 });
   }
+  // Pickup follows its opening times. Delivery is booked by run (checked again when the order is saved).
+  const runTime = !pickup && /^([01]\d|2[0-3]):[0-5]\d$/.test(String(body.run || "")) ? String(body.run) : null;
+  if (!pickup && delivery.mode === "closed") {
+    return NextResponse.json({ error: `Online delivery is paused right now. Please call the store on (08) 8188 5301.${pickupState(pickupCfg).open ? " Pickup is open right now if you'd like to switch." : ""}`, closed: true }, { status: 409 });
+  }
+  if (!pickup && !runTime) {
+    return NextResponse.json({ error: "Please choose a delivery run." }, { status: 400 });
+  }
   const cfg = pickup ? pickupCfg : delivery;
-  const when = serviceState(cfg);
+  const when = pickup ? serviceState(cfg) : { open: true };
   if (!when.open) {
     const days = describeWindows(cfg.schedule).map((l) => l.text).join(" and ");
     const other = pickup ? serviceState(delivery) : pickupState(pickupCfg);
@@ -144,8 +153,13 @@ export async function POST(request) {
       order = await createOrder({
         customerName, phone, address, notes, items: priced.items, estimatedTotal: total, deliveryFee: fee, place, source,
         orderType, etaMinutes: pickup ? pickupCfg.prepMinutes : null, clientKey,
+        run: pickup ? null : { date: adelaideDate(), time: runTime },
       });
     } catch (err) {
+      if (err.code === "RUN") {
+        const board = await getRunBoard().catch(() => null);
+        return NextResponse.json({ error: err.message, runs: board?.runs?.map((x) => ({ time: x.time, label: x.label, status: x.status, left: x.left, departs: x.departs, arrives: x.arrives, delay: x.delay })) }, { status: 409 });
+      }
       // two taps at the same instant: the second hits the unique key, so hand back the first order
       const first = err.code === "23505" && clientKey ? await orderByClientKey(clientKey) : null;
       if (first) return NextResponse.json({ success: true, order: first, repeat: true });

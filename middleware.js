@@ -11,5 +11,5 @@ export async function middleware(request) {
 
 // Only the dashboard itself. /dashboard/login must stay public or it would loop.
 export const config = {
-  matcher: ["/dashboard", "/dashboard/menu", "/dashboard/deals", "/dashboard/drivers", "/dashboard/settings"],
+  matcher: ["/dashboard", "/dashboard/menu", "/dashboard/options", "/dashboard/deals", "/dashboard/drivers", "/dashboard/settings"],
 };

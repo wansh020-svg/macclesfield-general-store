@@ -265,3 +265,22 @@ To offer a Coke bottle: add it in **Dashboard > Menu** with a price, then add it
   redeploy: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` (your Twilio number), and
   `ALERT_PHONE` (staff mobile like +61412345678, several separated by commas). It stays off until all four
   are set, and is capped at 40 texts an hour.
+
+## Delivery runs
+
+Delivery is booked by **run**: the driver leaves at set times and customers pick one at checkout
+("Leaves 5:30pm, arrives about 5:45pm to 6:15pm, 3 spots left"). Runs that are full, closed or past
+their cutoff are greyed out, and a run that fills while a customer is checking out is refused with a
+message and the open runs. Customers can book any run for today, from the morning.
+
+- **Default runs:** Fri, Sat and Sun at 4:30, 5:30, 6:30 and 7:30pm, 5 orders per run, orders closing
+  30 minutes before a run leaves, arrival window 30 minutes after a 15-minute drive.
+- **Edit them** in **Dashboard > Settings > Delivery runs**: set times per day, an optional limit for any
+  single run, and the three numbers above. "Following the runs below" / "Paused" switch delivery on and off.
+  The delivery hours shown on the site and printed pieces ("Fri to Sun, 4:30pm to 8pm") are worked out from
+  the runs. Reprint the poster, flyers and table tents if you change them.
+- **On the day** (Orders screen, **Delivery runs today**): Delay 10 min (the customers' pages update),
+  Allow 1 more (staff can take more orders than the limit), Close to new orders, Cancel run, and Add a
+  one-off run. Each delivery order shows its run, and a **Move to** list sends it to another run, even a full one.
+  If a run is cancelled its orders are flagged until they are moved or cancelled.
+- A cancelled order gives its place in the run back. Pickup is not affected.

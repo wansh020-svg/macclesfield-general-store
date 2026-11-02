@@ -8,6 +8,7 @@ import OrderTypeSwitch from "@/components/OrderTypeSwitch";
 import { typeName, useOrdering } from "@/components/OrderingContext";
 import { deliveryFee, minOrderProblem, round2 } from "@/lib/fees";
 import AddOns from "@/components/AddOns";
+import RunPicker, { useRuns } from "@/components/RunPicker";
 import { SHOP } from "@/lib/site";
 import { money } from "@/lib/format";
 import { loadProfile, rememberOrder, saveProfile } from "@/lib/local";
@@ -17,8 +18,17 @@ const field = "w-full rounded-2xl border-2 border-ink/15 bg-canvas-light px-4 py
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
-  const { open: serving, orderType, other, states, prepMinutes, cfg } = useOrdering();
+  const { orderType, other, states, prepMinutes, cfg } = useOrdering();
   const pickup = orderType === "pickup";
+  // Delivery is booked by run: pick one that is still open. Pickup just needs the shop to be open.
+  const { data: runData, refresh: refreshRuns, setData: setRunData } = useRuns(!pickup);
+  const openRuns = (runData?.runs || []).filter((r) => r.status === "open");
+  const [runTime, setRunTime] = useState("");
+  const serving = pickup ? states.pickup.open : runData ? openRuns.length > 0 : states.delivery.open;
+  useEffect(() => {
+    if (pickup) return;
+    if (!openRuns.some((r) => r.time === runTime)) setRunTime(openRuns[0]?.time || "");
+  }, [pickup, runData]); // eslint-disable-line react-hooks/exhaustive-deps
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
   const [chosen, setChosen] = useState(null);
   const [unverified, setUnverified] = useState(false);
@@ -68,13 +78,20 @@ export default function CheckoutPage() {
           source: readSource(),
           clientKey: (attempt.current ??= crypto.randomUUID()),
           website: form.website || "",
+          run: pickup ? undefined : runTime,
           notes: form.notes,
           items: items.map((i) => ({ itemId: i.itemId, dealId: i.dealId, size: i.size, options: i.options, qty: i.qty })),
         }),
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Failed to place order");
+      if (!res.ok) {
+        if (data.runs) {
+          setRunData((d) => ({ ...(d || {}), runs: data.runs }));
+          refreshRuns();
+        }
+        throw new Error(data.error || "Failed to place order");
+      }
 
       if (remember) saveProfile(form);
       rememberOrder({
@@ -146,6 +163,8 @@ export default function CheckoutPage() {
           autoCheck={saved}
         />
         )}
+
+        {!pickup && <RunPicker data={runData} value={runTime} onChange={setRunTime} />}
 
         <textarea placeholder={pickup ? "Notes (optional)" : "Notes: unit number, gate code, anything else (optional)"} rows={3} value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })} className={field} />

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { isDone, labelFor } from "@/lib/orderStatus";
 import { money } from "@/lib/format";
 import { chime } from "@/lib/chime";
+import { fmtTime } from "@/lib/hours";
+import RunsPanel from "@/components/staff/RunsPanel";
 
 const POLL_VISIBLE = 8000;
 const NAG_AFTER = 60000; // an order unseen this long rings faster
@@ -30,7 +32,7 @@ function ago(iso, now) {
   return h < 24 ? `${h} h ${mins % 60} min ago` : new Date(iso).toLocaleDateString("en-AU");
 }
 
-function OrderCard({ order, now, onStatus, onSpam }) {
+function OrderCard({ order, now, onStatus, onSpam, runs, onMove }) {
   const done = isDone(order.status);
   const pickup = order.order_type === "pickup";
   return (
@@ -51,6 +53,29 @@ function OrderCard({ order, now, onStatus, onSpam }) {
           {labelFor(order.status, order.order_type)}
         </span>
       </div>
+
+      {!pickup && order.run_time && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className={`rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-widest ${order.run_cancelled ? "bg-rust text-canvas-light" : "bg-pine text-canvas-light"}`}>
+            {fmtTime(order.run_time)} run{order.run_delay > 0 ? ` (+${order.run_delay} min)` : ""}{order.run_cancelled ? " CANCELLED" : ""}
+          </span>
+          {["new", "accepted", "ready"].includes(order.status) && runs?.length > 0 && (
+            <label className="text-xs text-ink/60 flex items-center gap-2">
+              Move to
+              <select
+                aria-label={`Move order ${order.id} to another run`} value="" onChange={(e) => e.target.value && onMove(order, e.target.value)}
+                className="border border-ink/20 bg-canvas-light rounded-lg px-2 py-1 text-sm"
+              >
+                <option value="">another run...</option>
+                {runs.filter((r) => r.time !== order.run_time && !r.cancelled).map((r) => <option key={r.time} value={r.time}>{r.label}{r.status !== "open" ? ` (${r.status})` : ""}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
+      )}
+      {!pickup && order.run_cancelled && !isDone(order.status) && (
+        <p className="mt-2 rounded-xl bg-rust/10 text-rust px-3 py-2 text-sm font-700">This run was cancelled. Move the order to another run, or cancel it and call the customer.</p>
+      )}
 
       <p className="font-display font-700 text-lg mt-4">{order.customer_name}</p>
       <p className="mt-1">
@@ -310,6 +335,21 @@ export default function OrdersBoard({ initialOrders }) {
   }, [waiting]);
 
   // ---- actions
+  const [runs, setRuns] = useState([]);
+  async function onMove(order, time) {
+    setError("");
+    try {
+      const res = await fetch(`/api/orders/${order.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ moveToRun: time }) });
+      if (res.status === 401) { window.location.href = "/dashboard/login"; return; }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Couldn't move the order");
+      setOrders((os) => os.map((o) => (o.id === order.id ? { ...o, run_time: time, run_cancelled: false, run_delay: 0 } : o)));
+      refresh();
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+
   async function onSpam(order) {
     if (!window.confirm(`Mark order #${order.id} as spam? It is cancelled and ${order.phone} can't order online again.`)) return;
     const before = orders;
@@ -402,6 +442,8 @@ export default function OrdersBoard({ initialOrders }) {
         </span>
       </div>
 
+      <RunsPanel refreshKey={orders.length} onRuns={setRuns} />
+
       <div role="tablist" aria-label="Filter orders" className="flex gap-2 mb-5">
         {[["all", "All"], ["delivery", `Delivery (${activeCount("delivery")})`], ["pickup", `Pickup (${activeCount("pickup")})`]].map(([key, text]) => (
           <button key={key} role="tab" aria-selected={filter === key} onClick={() => setFilter(key)}
@@ -421,19 +463,19 @@ export default function OrdersBoard({ initialOrders }) {
       <h2 className="font-display font-900 text-2xl">Needs action {needsAction.length > 0 && <span className="text-rust">({needsAction.length})</span>}</h2>
       <div className="mt-3 space-y-4">
         {needsAction.length === 0 && <p className="text-ink/60">No new orders. This page updates by itself.</p>}
-        {needsAction.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} onSpam={onSpam} />)}
+        {needsAction.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} onSpam={onSpam} runs={runs} onMove={onMove} />)}
       </div>
 
       <h2 className="font-display font-900 text-2xl mt-10">In progress ({inProgress.length})</h2>
       <div className="mt-3 space-y-4">
         {inProgress.length === 0 && <p className="text-ink/60">Nothing being made or delivered.</p>}
-        {inProgress.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} onSpam={onSpam} />)}
+        {inProgress.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} onSpam={onSpam} runs={runs} onMove={onMove} />)}
       </div>
 
       <details className="mt-10">
         <summary className="cursor-pointer font-display font-900 text-2xl">Finished ({finished.length})</summary>
         <div className="mt-3 space-y-4">
-          {finished.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} onSpam={onSpam} />)}
+          {finished.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} onSpam={onSpam} runs={runs} onMove={onMove} />)}
         </div>
       </details>
     </div>

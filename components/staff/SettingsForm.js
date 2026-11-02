@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { describeWindows } from "@/lib/hours";
-import ScheduleEditor from "@/components/staff/ScheduleEditor";
+import RunsEditor from "@/components/staff/RunsEditor";
 import PickupSettings from "@/components/staff/PickupSettings";
 import { btn, input, Label } from "@/components/staff/Bits";
 
@@ -24,7 +23,7 @@ async function save(body) {
 export default function SettingsForm({ initial, initialPickup }) {
   const [d, setD] = useState(initial);
   const [radius, setRadius] = useState(String(initial.radiusKm));
-  const [schedule, setSchedule] = useState(initial.schedule);
+  const [runs, setRuns] = useState(initial.runs);
   const blank = (v) => (v == null ? "" : String(v));
   const [fee, setFee] = useState({ feeBase: blank(initial.feeBase), minOrder: blank(initial.minOrder || ""), freeOver: blank(initial.freeOver), farKm: blank(initial.farKm), feeFar: blank(initial.feeFar) });
   const [msg, setMsg] = useState("");
@@ -38,7 +37,7 @@ export default function SettingsForm({ initial, initialPickup }) {
       const data = await save(body);
       setD(data.delivery);
       setRadius(String(data.delivery.radiusKm));
-      setSchedule(data.delivery.schedule);
+      setRuns(data.delivery.runs);
       setFee({ feeBase: blank(data.delivery.feeBase), minOrder: blank(data.delivery.minOrder || ""), freeOver: blank(data.delivery.freeOver), farKm: blank(data.delivery.farKm), feeFar: blank(data.delivery.feeFar) });
       setMsg(ok(data));
       return true;
@@ -60,21 +59,19 @@ export default function SettingsForm({ initial, initialPickup }) {
     );
   }
 
-  const summary = describeWindows(schedule).map((l) => l.text).join(" and ") || "no deliveries";
 
   return (
     <div className="space-y-6">
       <section className="rounded-3xl border-2 border-ink/15 bg-canvas-light p-5 space-y-4">
-        <h2 className="font-display font-900 text-xl">Delivery times</h2>
+        <h2 className="font-display font-900 text-xl">Delivery runs</h2>
         <fieldset className="space-y-2">
           <legend className="font-mono text-xs uppercase tracking-widest text-ink/60 mb-1">Online ordering is</legend>
           {[
-            ["schedule", "Following the weekly times below"],
-            ["open", "Open now (ignores the times, until you switch it back)"],
-            ["closed", "Paused (no orders, even in delivery times)"],
+            ["schedule", "Following the runs below"],
+            ["closed", "Paused (no delivery orders, even on run days)"],
           ].map(([value, label]) => (
             <label key={value} className="flex items-start gap-3">
-              <input type="radio" name="mode" className="mt-1.5 w-4 h-4" checked={d.mode === value} disabled={busy}
+              <input type="radio" name="mode" className="mt-1.5 w-4 h-4" checked={d.mode === value || (value === "schedule" && d.mode === "open")} disabled={busy}
                 onChange={async () => {
                   const before = d;
                   setD({ ...d, mode: value }); // move the switch straight away
@@ -84,14 +81,8 @@ export default function SettingsForm({ initial, initialPickup }) {
             </label>
           ))}
         </fieldset>
-        <div className="space-y-2">
-          <p className="font-mono text-xs uppercase tracking-widest text-ink/60">Weekly delivery times (Adelaide time)</p>
-          <ScheduleEditor schedule={schedule} onChange={setSchedule} prefix="Delivery" defaults={{ open: "16:00", close: "20:00" }} />
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <button disabled={busy} onClick={() => run({ schedule }, () => "Delivery times saved. The website updates within a minute.")} className={`${btn} bg-rust text-canvas-light`}>Save times</button>
-          <span className="text-sm text-ink/60">Customers will see: {summary}</span>
-        </div>
+        <p className="font-mono text-xs uppercase tracking-widest text-ink/60">Weekly delivery runs (Adelaide time)</p>
+        <RunsEditor runs={runs} onChange={setRuns} busy={busy} onSave={() => run({ runs }, () => "Delivery runs saved. The website updates within a minute.")} />
       </section>
 
       <PickupSettings initial={initialPickup} />

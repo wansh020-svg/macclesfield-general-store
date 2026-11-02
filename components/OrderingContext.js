@@ -2,11 +2,12 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_PICKUP, DEFAULT_SCHEDULE, describeWindows, serviceState } from "@/lib/hours";
+import { DEFAULT_RUNS, runsServiceState } from "@/lib/runs";
 
 const Ctx = createContext(null);
 
 const FALLBACK = {
-  delivery: { mode: "schedule", schedule: DEFAULT_SCHEDULE, feeBase: 8, farKm: null, feeFar: null, minOrder: 0, freeOver: null },
+  delivery: { mode: "schedule", schedule: DEFAULT_SCHEDULE, runs: { times: DEFAULT_RUNS.times.map((day) => day.map((r) => r.time)), cutoffMinutes: 30, windowMinutes: 30 }, feeBase: 8, farKm: null, feeFar: null, minOrder: 0, freeOver: null },
   pickup: { mode: "schedule", schedule: DEFAULT_PICKUP.schedule, prepMinutes: 15, lastOrderMinutes: 15 },
 };
 
@@ -26,7 +27,7 @@ export function OrderingProvider({ ordering, serverNow, children }) {
     return () => clearInterval(id);
   }, []);
 
-  const states = useMemo(() => ({ delivery: serviceState(cfg.delivery, now), pickup: serviceState(cfg.pickup, now) }), [cfg, now]);
+  const states = useMemo(() => ({ delivery: runsServiceState(cfg.delivery, now), pickup: serviceState(cfg.pickup, now) }), [cfg, now]);
 
   // On arrival, remember their last choice, but if that one is closed and the other is open, use the open one.
   useEffect(() => {
