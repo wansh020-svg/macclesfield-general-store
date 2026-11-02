@@ -1,7 +1,7 @@
 import PrintBar from "@/components/PrintBar";
 import { isLight, printTheme } from "@/lib/printTheme";
-import { deliveryText } from "@/lib/hours";
-import { printDelivery } from "@/lib/printDelivery";
+import { deliveryText, pickupText } from "@/lib/hours";
+import { printDelivery, printPickup } from "@/lib/printDelivery";
 import { feeText } from "@/lib/fees";
 import { qrSvg } from "@/lib/qr";
 import { SHOP, SITE_URL } from "@/lib/site";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 const clean = (v) => String(v || "").replace(/[<>]/g, "").slice(0, 60);
 
 // One half of a table tent (210 x 74 mm).
-function Panel({ qr, shown, offer, t, flip, when }) {
+function Panel({ qr, shown, offer, t, flip, when, pick }) {
   return (
     <div
       className={`${t.page} flex items-center`}
@@ -26,7 +26,7 @@ function Panel({ qr, shown, offer, t, flip, when }) {
         ) : (
           <p className={t.sub} style={{ fontSize: "4mm", marginTop: "3mm" }}>Pick it up from the counter, or have it delivered.</p>
         )}
-        <p className={t.sub} style={{ fontSize: "3.6mm", marginTop: "3mm" }}>Pickup whenever we&apos;re open &nbsp;&middot;&nbsp; Delivery {when}</p>
+        <p className={t.sub} style={{ fontSize: "3.6mm", marginTop: "3mm" }}>Pickup {pick} &nbsp;&middot;&nbsp; Delivery {when}</p>
         <p className={`font-mono ${t.accent}`} style={{ fontSize: "3.4mm", marginTop: "1mm" }}>{shown} &nbsp;&middot;&nbsp; {SHOP.phone}</p>
       </div>
       <div className="text-center shrink-0">
@@ -46,6 +46,7 @@ export default async function TableCardPage({ searchParams }) {
   const light = isLight(searchParams?.light);
   const t = printTheme(light);
   const dcfg = await printDelivery();
+  const pick = pickupText(await printPickup());
   const when = `${deliveryText(dcfg)} (${feeText(dcfg)})`;
   const link = `${SITE_URL}/order?src=table`;
   const shown = link.replace(/^https?:\/\/(www\.)?/, "").replace(/\?.*$/, "");
@@ -60,9 +61,9 @@ export default async function TableCardPage({ searchParams }) {
         <div className="mx-auto bg-white shadow-xl print:shadow-none" style={{ width: "210mm", height: "297mm" }}>
           {[0, 1].map((i) => (
             <div key={i} style={{ height: "148.5mm", outline: "0.3mm dashed #999", outlineOffset: "-0.15mm" }}>
-              <Panel qr={qr} shown={shown} offer={offer} t={t} when={when} flip />
+              <Panel qr={qr} shown={shown} offer={offer} t={t} when={when} pick={pick} flip />
               <div style={{ borderTop: "0.3mm dashed #777" }} />
-              <Panel qr={qr} shown={shown} offer={offer} t={t} when={when} />
+              <Panel qr={qr} shown={shown} offer={offer} t={t} when={when} pick={pick} />
             </div>
           ))}
         </div>

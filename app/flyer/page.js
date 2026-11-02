@@ -1,7 +1,7 @@
 import PrintBar from "@/components/PrintBar";
 import { isLight, printTheme } from "@/lib/printTheme";
-import { deliveryText } from "@/lib/hours";
-import { printDelivery } from "@/lib/printDelivery";
+import { deliveryText, pickupText } from "@/lib/hours";
+import { printDelivery, printPickup } from "@/lib/printDelivery";
 import { feeText } from "@/lib/fees";
 import { qrSvg } from "@/lib/qr";
 import { SHOP, SITE_URL } from "@/lib/site";
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 const clean = (v) => String(v || "").replace(/[<>]/g, "").slice(0, 60);
 
-function Card({ qr, shown, offer, t, when }) {
+function Card({ qr, shown, offer, t, when, pick }) {
   return (
     <div className={`${t.page} flex flex-col text-center`} style={{ width: "105mm", height: "148.5mm", padding: "9mm 8mm 8mm" }}>
       <p className={`font-mono ${t.accent} uppercase`} style={{ fontSize: "3mm", letterSpacing: "0.2em" }}>{SHOP.name}</p>
@@ -26,7 +26,7 @@ function Card({ qr, shown, offer, t, when }) {
       </div>
       <p className="font-display font-900" style={{ fontSize: "6mm", marginTop: "3mm" }}>Scan to order</p>
       <p className={`font-mono ${t.accent}`} style={{ fontSize: "3.2mm", marginTop: "1mm" }}>{shown}</p>
-      <p className={t.sub} style={{ fontSize: "3.2mm", marginTop: "3mm" }}>Pickup whenever we&apos;re open. Delivery {when}.</p>
+      <p className={t.sub} style={{ fontSize: "3.2mm", marginTop: "3mm" }}>Pickup {pick}. Delivery {when}.</p>
       <p className="font-display font-700" style={{ fontSize: "3.6mm" }}>{SHOP.phone}</p>
     </div>
   );
@@ -37,6 +37,7 @@ export default async function FlyerPage({ searchParams }) {
   const light = isLight(searchParams?.light);
   const t = printTheme(light);
   const dcfg = await printDelivery();
+  const pick = pickupText(await printPickup());
   const when = `${deliveryText(dcfg)} (${feeText(dcfg)})`;
   const link = `${SITE_URL}/order?src=flyer`;
   const shown = link.replace(/^https?:\/\/(www\.)?/, "").replace(/\?.*$/, "");
@@ -51,7 +52,7 @@ export default async function FlyerPage({ searchParams }) {
         <div className="mx-auto grid grid-cols-2 bg-white shadow-xl print:shadow-none" style={{ width: "210mm", height: "297mm", gridTemplateRows: "148.5mm 148.5mm" }}>
           {[0, 1, 2, 3].map((i) => (
             <div key={i} style={{ outline: "0.3mm dashed #999", outlineOffset: "-0.15mm" }}>
-              <Card qr={qr} shown={shown} offer={offer} t={t} when={when} />
+              <Card qr={qr} shown={shown} offer={offer} t={t} when={when} pick={pick} />
             </div>
           ))}
         </div>

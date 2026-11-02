@@ -178,8 +178,8 @@ open one and tells the customer).
 
 - **Pickup** needs only a name and phone number: no address and no distance check. It shows
   "Ready in about N minutes" and the shop's address. The customer pays **at the counter**.
-- **Pickup times** are in **Dashboard > Settings > Pickup times**. By default they follow the dine-in
-  hours, and pickup orders stop **15 minutes before closing** (change "Last orders"). The same
+- **Pickup times** are in **Dashboard > Settings > Pickup times**. By default pickup is **Mon to Thu 6:30am to 3pm** (no delivery those days) and
+  **Fri to Sun 6:30am to 8pm**, and pickup orders stop **15 minutes before closing** (change "Last orders"). The same
   **Open now** and **Paused** switches exist for pickup and delivery separately. "Usual prep time"
   (default 15 minutes) is what customers are told.
 - **Staff Orders screen:** each order has a **Pickup** or **Delivery** badge, and there are

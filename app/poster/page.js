@@ -1,7 +1,7 @@
 import PrintBar from "@/components/PrintBar";
 import { isLight, printTheme } from "@/lib/printTheme";
-import { deliveryText } from "@/lib/hours";
-import { printDelivery } from "@/lib/printDelivery";
+import { deliveryText, pickupText } from "@/lib/hours";
+import { printDelivery, printPickup } from "@/lib/printDelivery";
 import { feeText } from "@/lib/fees";
 import { qrSvg } from "@/lib/qr";
 import { SHOP, SITE_URL } from "@/lib/site";
@@ -17,6 +17,7 @@ export default async function PosterPage({ searchParams }) {
   const t = printTheme(light);
   const delivery = await printDelivery();
   const when = deliveryText(delivery);
+  const pick = pickupText(await printPickup());
   const link = `${SITE_URL}/order?src=poster`;
   const shown = link.replace(/^https?:\/\/(www\.)?/, "").replace(/\?.*$/, "");
   const qr = await qrSvg(link);
@@ -40,7 +41,7 @@ export default async function PosterPage({ searchParams }) {
               Coffee, brekkie, burgers and proper Punjabi curries from your local general store. Order online for pickup or delivery.
             </p>
             <p className="font-display font-900 border-2 border-current rounded-full self-start" style={{ fontSize: "5.4mm", padding: "2mm 6mm", marginTop: "6mm" }}>
-              Pickup whenever we&apos;re open
+              Pickup {pick}
             </p>
             <p className="font-display font-900 border-2 border-current rounded-full self-start" style={{ fontSize: "5.4mm", padding: "2mm 6mm", marginTop: "3mm" }}>
               Delivery {when} &middot; {feeText(delivery)}
