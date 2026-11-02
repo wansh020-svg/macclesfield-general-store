@@ -205,3 +205,27 @@ Optional extras, all off until you fill them in (empty box = off):
 
 The fee shows on checkout, the staff Orders screen and the driver's cash-to-collect, which includes it.
 Printed posters, flyers and table tents show the current fee, so reprint them if you change it.
+
+## Extras (milk, extra shot, syrups, bacon...)
+
+Items with extras show a **Customise** button. It opens a sheet with the size, then each set of extras
+with its price, and a live total on the **Add to cart** button. The choices show in the cart, on the
+staff Orders screen, on the driver's list and on the tracking page ("Latte - Large (Oat milk, Extra shot)").
+
+Staff edit them in **Dashboard > Extras**:
+
+- Each **set** has a name, whether the customer picks one (milk) or any (tick boxes), whether it is
+  required, and its choices with prices ($0 for free things like sugar). **Sold out** hides a single
+  choice without deleting it.
+- **Goes on**: tick a whole menu section, then open it to untick items it doesn't suit (milk is off the
+  Long Black). New items added to a ticked section get the extras automatically.
+- Starting sets, taken from the prices already on the menu: milk +$1 (oat, soy, almond, lactose free),
+  coffee extras (extra shot, caramel/vanilla/hazelnut syrup +$1, sugar free), syrups and sugar for hot
+  chocolate and chai, sugar for tea, breakfast extras (mushrooms, tomato, spinach, hashbrown, bacon, egg,
+  avocado, cheese) on rolls, sourdough, toast, toasties, croissants and muffins, egg/bacon +$2 on the
+  Beef Burger, and an extra piece of fish +$4.
+- The old loose "Extra shot / Syrups / Alternative milks" and breakfast "Extras" rows were removed from
+  the menu because they are now real extras. Add an item back in Menu if you want to sell one on its own.
+
+The server prices every extra itself and refuses anything not offered for that item, sold out, or
+against a pick-one rule, so a phone can't change a price.

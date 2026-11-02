@@ -65,7 +65,7 @@ export default function CheckoutPage() {
           unverified: pickup ? false : unverified,
           source: readSource(),
           notes: form.notes,
-          items: items.map((i) => ({ itemId: i.itemId, dealId: i.dealId, size: i.size, qty: i.qty })),
+          items: items.map((i) => ({ itemId: i.itemId, dealId: i.dealId, size: i.size, options: i.options, qty: i.qty })),
         }),
       });
 
@@ -75,7 +75,7 @@ export default function CheckoutPage() {
       if (remember) saveProfile(form);
       rememberOrder({
         id: data.order.id, token: data.order.token, type: orderType, at: Date.now(), total: data.order.total,
-        items: items.map((i) => ({ key: i.key, name: i.name, price: i.price, qty: i.qty, itemId: i.itemId, dealId: i.dealId, size: i.size })),
+        items: items.map((i) => ({ key: i.key, name: i.name, price: i.price, qty: i.qty, itemId: i.itemId, dealId: i.dealId, size: i.size, options: i.options, optionLabels: i.optionLabels })),
       });
       clearCart();
       router.push(`/checkout/success?id=${data.order.id}&t=${data.order.token}&ty=${orderType}`);

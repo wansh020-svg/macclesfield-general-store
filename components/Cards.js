@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useCart } from "@/components/CartContext";
+import OptionSheet from "@/components/OptionSheet";
 import { useOrdering } from "@/components/OrderingContext";
 import { money } from "@/lib/format";
 import { toneAt } from "@/lib/tones";
@@ -110,6 +112,29 @@ function Shell({ title, desc, imageId, tag, tone, dim, children }) {
 
 const Price = ({ children }) => <p className="font-display font-900 text-2xl leading-none">{children}</p>;
 
+// Items with extras open a "make it yours" sheet instead of adding straight away.
+function CustomiseControl({ item, tone, from }) {
+  const [openSheet, setOpenSheet] = useState(false);
+  const { anyOpen: open } = useOrdering();
+  const { items } = useCart();
+  const inCart = items.filter((i) => i.itemId === item.id && !i.dealId).reduce((n, i) => n + i.qty, 0);
+  if (!open) {
+    return <button disabled aria-label={`${item.name}: not taking orders right now`} className="w-full rounded-full h-11 bg-ink/10 text-ink/40 font-display font-900 text-base">Closed</button>;
+  }
+  return (
+    <>
+      {from && <Price>{from}</Price>}
+      <button
+        onClick={() => setOpenSheet(true)} aria-label={`Customise ${item.name}`}
+        className={`w-full rounded-full h-11 font-display font-900 text-base active:scale-95 transition-transform ${toneAt(tone).btn}`}
+      >
+        {inCart > 0 ? `Add another (${inCart})` : "Customise"}
+      </button>
+      {openSheet && <OptionSheet item={item} tone={tone} onClose={() => setOpenSheet(false)} />}
+    </>
+  );
+}
+
 export function ItemCard({ item, tone = 0 }) {
   const hasSizes = Array.isArray(item.sizes) && item.sizes.length > 0;
   const base = { itemId: item.id };
@@ -119,6 +144,16 @@ export function ItemCard({ item, tone = 0 }) {
     return (
       <Shell {...shell} dim>
         <p className="font-mono text-xs uppercase tracking-widest text-ink/50 py-2">Sold out</p>
+      </Shell>
+    );
+  }
+
+  const hasOptions = Array.isArray(item.options) && item.options.length > 0 && (hasSizes || item.price !== null);
+  if (hasOptions) {
+    const lowest = hasSizes ? Math.min(...item.sizes.map((s) => Number(s.price))) : Number(item.price);
+    return (
+      <Shell {...shell}>
+        <CustomiseControl item={item} tone={tone} from={`${hasSizes && item.sizes.length > 1 ? "from " : ""}${money(lowest)}`} />
       </Shell>
     );
   }

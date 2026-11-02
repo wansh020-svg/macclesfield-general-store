@@ -42,7 +42,10 @@ export default function CartPage() {
         {items.map((item) => (
           <li key={item.key} className="py-4">
             <div className="flex items-start justify-between gap-4">
-              <p className="font-display font-700 text-lg leading-snug">{item.name}</p>
+              <div>
+                <p className="font-display font-700 text-lg leading-snug">{item.name}</p>
+                {item.optionLabels?.length > 0 && <p className="text-sm text-ink/60 mt-0.5">{item.optionLabels.join(", ")}</p>}
+              </div>
               <p className="font-mono text-sm shrink-0">${(item.price * item.qty).toFixed(2)}</p>
             </div>
             <div className="flex items-center justify-between mt-3">

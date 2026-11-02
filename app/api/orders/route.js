@@ -79,7 +79,7 @@ export async function POST(request) {
   try {
     priced = await priceCart(lines);
   } catch (err) {
-    const known = /no longer available|Bad quantity|Please choose|in store/.test(err.message);
+    const known = /no longer available|Bad quantity|Please choose|in store|isn't available/.test(err.message);
     if (!known) console.error(err);
     return NextResponse.json(
       { error: known ? err.message : "Failed to place order" },
