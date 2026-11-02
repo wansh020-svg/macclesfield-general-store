@@ -6,7 +6,7 @@ import { DEFAULT_PICKUP, DEFAULT_SCHEDULE, describeWindows, serviceState } from 
 const Ctx = createContext(null);
 
 const FALLBACK = {
-  delivery: { mode: "schedule", schedule: DEFAULT_SCHEDULE },
+  delivery: { mode: "schedule", schedule: DEFAULT_SCHEDULE, feeBase: 8, farKm: null, feeFar: null, minOrder: 0, freeOver: null },
   pickup: { mode: "schedule", schedule: DEFAULT_PICKUP.schedule, prepMinutes: 15, lastOrderMinutes: 15 },
 };
 

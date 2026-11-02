@@ -2,6 +2,7 @@ import PrintBar from "@/components/PrintBar";
 import { isLight, printTheme } from "@/lib/printTheme";
 import { deliveryText } from "@/lib/hours";
 import { printDelivery } from "@/lib/printDelivery";
+import { feeText } from "@/lib/fees";
 import { qrSvg } from "@/lib/qr";
 import { SHOP, SITE_URL } from "@/lib/site";
 
@@ -42,7 +43,7 @@ export default async function PosterPage({ searchParams }) {
               Pickup whenever we&apos;re open
             </p>
             <p className="font-display font-900 border-2 border-current rounded-full self-start" style={{ fontSize: "5.4mm", padding: "2mm 6mm", marginTop: "3mm" }}>
-              Delivery {when}
+              Delivery {when} &middot; {feeText(delivery)}
             </p>
             {offer && (
               <p className="font-display font-900 bg-gold text-ink rounded-full self-start" style={{ fontSize: "6mm", padding: "2.5mm 7mm", marginTop: "4mm" }}>{offer}</p>

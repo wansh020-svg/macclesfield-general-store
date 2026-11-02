@@ -2,6 +2,7 @@ import PrintBar from "@/components/PrintBar";
 import { isLight, printTheme } from "@/lib/printTheme";
 import { deliveryText } from "@/lib/hours";
 import { printDelivery } from "@/lib/printDelivery";
+import { feeText } from "@/lib/fees";
 import { qrSvg } from "@/lib/qr";
 import { SHOP, SITE_URL } from "@/lib/site";
 
@@ -44,7 +45,8 @@ export default async function TableCardPage({ searchParams }) {
   const offer = clean(searchParams?.offer);
   const light = isLight(searchParams?.light);
   const t = printTheme(light);
-  const when = deliveryText(await printDelivery());
+  const dcfg = await printDelivery();
+  const when = `${deliveryText(dcfg)} (${feeText(dcfg)})`;
   const link = `${SITE_URL}/order?src=table`;
   const shown = link.replace(/^https?:\/\/(www\.)?/, "").replace(/\?.*$/, "");
   const qr = await qrSvg(link);

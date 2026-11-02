@@ -4,10 +4,13 @@ import Link from "next/link";
 import { useCart } from "@/components/CartContext";
 import OrderTypeSwitch from "@/components/OrderTypeSwitch";
 import { typeName, useOrdering } from "@/components/OrderingContext";
+import { deliveryFee, minOrderProblem, feeText } from "@/lib/fees";
 
 export default function CartPage() {
   const { items, updateQty, removeItem, total, count } = useCart();
-  const { open, orderType, other, states } = useOrdering();
+  const { open, orderType, other, states, cfg } = useOrdering();
+  const fee = orderType === "delivery" ? deliveryFee(cfg.delivery, total, null) : 0;
+  const short = orderType === "delivery" ? minOrderProblem(cfg.delivery, total) : null;
 
   if (items.length === 0) {
     return (
@@ -79,7 +82,9 @@ export default function CartPage() {
         </p>
       )}
       <p className="text-ink/50 text-sm mt-6">
-        Pay cash on delivery, or at the counter for pickup. The final total is worked out when you place the order.
+        {orderType === "delivery"
+          ? `Delivery is ${feeText(cfg.delivery)}${short ? `, and needs at least $${short.min} of food` : ""}. Pay cash on delivery.`
+          : "Pickup has no extra charge. Pay at the counter."}
       </p>
 
       <div className="fixed bottom-0 inset-x-0 z-50 bg-canvas border-t border-ink/10 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">

@@ -4,8 +4,10 @@ import { createOrder, getDelivery, getOrders, getPickup, priceCart } from "@/lib
 import { haversineKm } from "@/lib/geo";
 import { describeWindows, pickupState, serviceState } from "@/lib/hours";
 import { ORDER_TYPES } from "@/lib/orderStatus";
+import { deliveryFee, minOrderProblem, round2 } from "@/lib/fees";
 import { readAddressProof } from "@/lib/session";
 
+const dollars = (n) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
 const clip = (v, n) => String(v ?? "").trim().slice(0, n);
 
 export async function POST(request) {
@@ -85,14 +87,28 @@ export async function POST(request) {
     );
   }
 
+  // Delivery has a fee (and maybe a minimum order); pickup has neither. The server decides, never the browser.
+  let fee = 0;
+  if (!pickup) {
+    const short = minOrderProblem(delivery, priced.total);
+    if (short) {
+      return NextResponse.json(
+        { error: `Delivery orders need at least ${dollars(short.min)} of food (yours is ${dollars(priced.total)}). Add ${dollars(short.short)} more, or choose pickup.` },
+        { status: 400 }
+      );
+    }
+    fee = deliveryFee(delivery, priced.total, place.verified ? place.distanceKm : null);
+  }
+  const total = round2(priced.total + fee);
+
   try {
     const order = await createOrder({
-      customerName, phone, address, notes, items: priced.items, estimatedTotal: priced.total, place, source,
+      customerName, phone, address, notes, items: priced.items, estimatedTotal: total, deliveryFee: fee, place, source,
       orderType, etaMinutes: pickup ? pickupCfg.prepMinutes : null,
     });
     return NextResponse.json({
       success: true,
-      order: { id: order.id, created_at: order.created_at, total: priced.total, token: order.track_token, type: orderType, etaMinutes: pickup ? pickupCfg.prepMinutes : null },
+      order: { id: order.id, created_at: order.created_at, total, subtotal: priced.total, deliveryFee: fee, token: order.track_token, type: orderType, etaMinutes: pickup ? pickupCfg.prepMinutes : null },
     });
   } catch (err) {
     console.error(err);

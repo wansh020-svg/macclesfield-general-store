@@ -6,6 +6,7 @@ import AddressField from "@/components/AddressField";
 import { useCart } from "@/components/CartContext";
 import OrderTypeSwitch from "@/components/OrderTypeSwitch";
 import { typeName, useOrdering } from "@/components/OrderingContext";
+import { deliveryFee, minOrderProblem, round2 } from "@/lib/fees";
 import { SHOP } from "@/lib/site";
 import { money } from "@/lib/format";
 import { loadProfile, rememberOrder, saveProfile } from "@/lib/local";
@@ -15,7 +16,7 @@ const field = "w-full rounded-2xl border-2 border-ink/15 bg-canvas-light px-4 py
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
-  const { open: serving, orderType, other, states, prepMinutes } = useOrdering();
+  const { open: serving, orderType, other, states, prepMinutes, cfg } = useOrdering();
   const pickup = orderType === "pickup";
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
   const [chosen, setChosen] = useState(null);
@@ -33,6 +34,9 @@ export default function CheckoutPage() {
   }, []);
 
   // a pickup has no address to check
+  const fee = pickup ? 0 : deliveryFee(cfg.delivery, total, chosen?.distanceKm ?? null);
+  const grand = round2(total + fee);
+  const short = pickup ? null : minOrderProblem(cfg.delivery, total);
   const addressReady = pickup || Boolean(chosen) || unverified;
 
   async function handleSubmit(e) {
@@ -96,7 +100,7 @@ export default function CheckoutPage() {
     <section className="max-w-md mx-auto px-5 pt-8 pb-16">
       <h1 className="font-display font-900 text-4xl leading-none">{pickup ? "Pick up" : "Where to?"}</h1>
       <p className="text-ink/60 mt-2">
-        {pickup ? "Pay at the counter" : "Cash on delivery"}: <span className="font-display font-900 text-ink">{money(total)}</span>. No card needed online.
+        {pickup ? "Pay at the counter" : "Cash on delivery"}: <span className="font-display font-900 text-ink">{money(grand)}</span>{fee > 0 ? ` (includes ${money(fee)} delivery)` : ""}. No card needed online.
       </p>
 
       <OrderTypeSwitch className="mt-5" />
@@ -139,10 +143,20 @@ export default function CheckoutPage() {
           <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
           Remember my details on this phone
         </label>
+        {short && (
+          <p role="status" className="rounded-2xl bg-gold text-ink px-4 py-3 text-sm font-display font-700">
+            Delivery needs at least {money(short.min)} of food. Add {money(short.short)} more, or switch to pickup above.
+          </p>
+        )}
+        <dl className="rounded-2xl bg-ink/5 px-4 py-3 text-sm space-y-1" aria-label="Order total">
+          <div className="flex justify-between"><dt>Food</dt><dd>{money(total)}</dd></div>
+          {!pickup && <div className="flex justify-between"><dt>Delivery</dt><dd>{fee > 0 ? money(fee) : "Free"}</dd></div>}
+          <div className="flex justify-between font-display font-900 text-base border-t border-ink/15 pt-1"><dt>Total</dt><dd>{money(grand)}</dd></div>
+        </dl>
         {error && <p role="alert" className="rounded-2xl bg-rust/10 text-rust px-4 py-3 text-sm">{error}</p>}
-        <button type="submit" disabled={submitting || !addressReady || !serving}
+        <button type="submit" disabled={submitting || !addressReady || !serving || Boolean(short)}
           className="w-full rounded-full bg-rust text-canvas-light font-display font-900 text-xl h-14 disabled:opacity-50 active:scale-95 transition-transform">
-          {submitting ? "Placing order..." : !serving ? `${typeName(orderType)} isn't open right now` : addressReady ? (pickup ? "Place pickup order" : "Place order") : "Check your address to continue"}
+          {submitting ? "Placing order..." : !serving ? `${typeName(orderType)} isn't open right now` : short ? "Add more to order delivery" : addressReady ? (pickup ? `Place pickup order \u00b7 ${money(grand)}` : `Place order \u00b7 ${money(grand)}`) : "Check your address to continue"}
         </button>
       </form>
     </section>

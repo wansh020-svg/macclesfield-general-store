@@ -1,3 +1,4 @@
+import { feeText } from "@/lib/fees";
 import { getOrderingCached } from "@/lib/db";
 import { DEFAULT_PICKUP, DEFAULT_SCHEDULE, describeWindows, storeHoursLines, storeWindows } from "@/lib/hours";
 
@@ -36,6 +37,7 @@ export default async function ShopHours({ tone = "light", className = "" }) {
         <p key={l.text}>{l.days}: {l.time}</p>
       ))}
       {!deliveryLines.length && delivery?.mode !== "closed" && <p>No deliveries scheduled</p>}
+      {delivery?.feeBase != null && deliveryLines.length > 0 && <p>Delivery fee: {feeText(delivery)}</p>}
     </div>
   );
 }

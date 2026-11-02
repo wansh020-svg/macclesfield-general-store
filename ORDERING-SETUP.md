@@ -189,3 +189,19 @@ open one and tells the customer).
   claim even if someone tries to guess the order number.
 - **Tracking page:** pickup customers see Received, Being made, **Ready to collect**, Collected.
 - The status "collected" is only for pickups, and "out for delivery" / "delivered" only for deliveries.
+
+## Delivery fee
+
+Delivery orders pay a flat **$8** (Dashboard > Settings > **Delivery fee**). Pickup is never charged.
+The fee is worked out on the server from these settings, so a customer's phone cannot change it, and
+it is stored on each order: changing the fee later does not alter orders already placed.
+
+Optional extras, all off until you fill them in (empty box = off):
+
+- **Minimum food order for delivery**: smaller delivery orders are asked to add more or choose pickup.
+- **Free delivery over**: food total at or above this ships free.
+- **Further than (km) / charge**: a higher fee for far addresses. An address that could not be checked
+  pays the normal fee (you phone to confirm anyway).
+
+The fee shows on checkout, the staff Orders screen and the driver's cash-to-collect, which includes it.
+Printed posters, flyers and table tents show the current fee, so reprint them if you change it.

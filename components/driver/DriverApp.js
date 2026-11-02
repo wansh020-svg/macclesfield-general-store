@@ -40,6 +40,7 @@ function MineCard({ order, busy, onAction }) {
         <span className="font-display font-700">Collect cash</span>
         <span className="font-display font-900 text-3xl">{money(order.estimated_total)}</span>
       </div>
+      {Number(order.delivery_fee) > 0 && <p className="mt-1 text-xs font-mono uppercase tracking-widest text-canvas-light/60">includes {money(order.delivery_fee)} delivery fee</p>}
 
       {!confirming ? (
         <div className="mt-4 space-y-3">

@@ -100,7 +100,7 @@ function OrderCard({ order, now, onStatus }) {
       )}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <span className="font-display font-900 text-2xl">{money(order.estimated_total || 0)} <span className="font-mono text-xs uppercase tracking-widest text-ink/50">{pickup ? "at the counter" : "cash"}</span></span>
+        <span className="font-display font-900 text-2xl">{money(order.estimated_total || 0)} <span className="font-mono text-xs uppercase tracking-widest text-ink/50">{pickup ? "at the counter" : "cash"}</span>{Number(order.delivery_fee) > 0 && <span className="block font-mono text-xs uppercase tracking-widest text-ink/50">includes {money(order.delivery_fee)} delivery</span>}</span>
         <div className="flex flex-wrap gap-2">
           {order.status === "new" && (
             <>

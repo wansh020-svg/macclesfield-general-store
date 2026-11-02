@@ -25,6 +25,8 @@ export default function SettingsForm({ initial, initialPickup }) {
   const [d, setD] = useState(initial);
   const [radius, setRadius] = useState(String(initial.radiusKm));
   const [schedule, setSchedule] = useState(initial.schedule);
+  const blank = (v) => (v == null ? "" : String(v));
+  const [fee, setFee] = useState({ feeBase: blank(initial.feeBase), minOrder: blank(initial.minOrder || ""), freeOver: blank(initial.freeOver), farKm: blank(initial.farKm), feeFar: blank(initial.feeFar) });
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -37,6 +39,7 @@ export default function SettingsForm({ initial, initialPickup }) {
       setD(data.delivery);
       setRadius(String(data.delivery.radiusKm));
       setSchedule(data.delivery.schedule);
+      setFee({ feeBase: blank(data.delivery.feeBase), minOrder: blank(data.delivery.minOrder || ""), freeOver: blank(data.delivery.freeOver), farKm: blank(data.delivery.farKm), feeFar: blank(data.delivery.feeFar) });
       setMsg(ok(data));
       return true;
     } catch (e) {
@@ -109,6 +112,29 @@ export default function SettingsForm({ initial, initialPickup }) {
             <button disabled={busy} onClick={() => run({ radiusKm: radius }, () => "Radius saved.")} className={`${btn} bg-rust text-canvas-light shrink-0`}>Save</button>
           </div>
         </Label>
+      </section>
+
+      <section className="rounded-3xl border-2 border-ink/15 bg-canvas-light p-5 space-y-4">
+        <h2 className="font-display font-900 text-xl">Delivery fee</h2>
+        <p className="text-sm text-ink/70">Charged on delivery orders only. Pickup is never charged. Leave an optional box empty to switch it off.</p>
+        <Label text="Delivery fee ($)" hint="0 = free delivery.">
+          <input className={`${input} mt-1`} inputMode="decimal" value={fee.feeBase} onChange={(e) => setFee({ ...fee, feeBase: e.target.value })} />
+        </Label>
+        <Label text="Minimum food order for delivery ($, optional)" hint="Smaller orders are asked to add more or choose pickup.">
+          <input className={`${input} mt-1`} inputMode="decimal" value={fee.minOrder} onChange={(e) => setFee({ ...fee, minOrder: e.target.value })} />
+        </Label>
+        <Label text="Free delivery over ($, optional)" hint="Food total at or above this ships free.">
+          <input className={`${input} mt-1`} inputMode="decimal" value={fee.freeOver} onChange={(e) => setFee({ ...fee, freeOver: e.target.value })} />
+        </Label>
+        <div className="grid grid-cols-2 gap-3">
+          <Label text="Further than (km, optional)">
+            <input className={`${input} mt-1`} inputMode="decimal" value={fee.farKm} onChange={(e) => setFee({ ...fee, farKm: e.target.value })} />
+          </Label>
+          <Label text="...charge ($)">
+            <input className={`${input} mt-1`} inputMode="decimal" value={fee.feeFar} onChange={(e) => setFee({ ...fee, feeFar: e.target.value })} />
+          </Label>
+        </div>
+        <button disabled={busy} onClick={() => run({ ...fee }, () => "Delivery fee saved.")} className={`${btn} bg-rust text-canvas-light`}>Save delivery fee</button>
       </section>
 
       <section className="rounded-3xl border-2 border-ink/15 bg-canvas-light p-5 space-y-4">
