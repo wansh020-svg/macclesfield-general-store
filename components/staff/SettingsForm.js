@@ -25,7 +25,7 @@ export default function SettingsForm({ initial, initialPickup }) {
   const [radius, setRadius] = useState(String(initial.radiusKm));
   const [runs, setRuns] = useState(initial.runs);
   const blank = (v) => (v == null ? "" : String(v));
-  const [fee, setFee] = useState({ feeBase: blank(initial.feeBase), minOrder: blank(initial.minOrder || ""), freeOver: blank(initial.freeOver), farKm: blank(initial.farKm), feeFar: blank(initial.feeFar) });
+  const [fee, setFee] = useState({ feeBase: blank(initial.feeBase), minOrder: blank(initial.minOrder || ""), largeOrder: blank(initial.largeOrder ?? 100), freeOver: blank(initial.freeOver), farKm: blank(initial.farKm), feeFar: blank(initial.feeFar) });
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -38,7 +38,7 @@ export default function SettingsForm({ initial, initialPickup }) {
       setD(data.delivery);
       setRadius(String(data.delivery.radiusKm));
       setRuns(data.delivery.runs);
-      setFee({ feeBase: blank(data.delivery.feeBase), minOrder: blank(data.delivery.minOrder || ""), freeOver: blank(data.delivery.freeOver), farKm: blank(data.delivery.farKm), feeFar: blank(data.delivery.feeFar) });
+      setFee({ feeBase: blank(data.delivery.feeBase), minOrder: blank(data.delivery.minOrder || ""), largeOrder: blank(data.delivery.largeOrder ?? 100), freeOver: blank(data.delivery.freeOver), farKm: blank(data.delivery.farKm), feeFar: blank(data.delivery.feeFar) });
       setMsg(ok(data));
       return true;
     } catch (e) {
@@ -113,6 +113,9 @@ export default function SettingsForm({ initial, initialPickup }) {
         </Label>
         <Label text="Minimum food order for delivery ($, optional)" hint="Smaller orders are asked to add more or choose pickup.">
           <input className={`${input} mt-1`} inputMode="decimal" value={fee.minOrder} onChange={(e) => setFee({ ...fee, minOrder: e.target.value })} />
+        </Label>
+        <Label text="Flag orders over ($)" hint="Staff see a Large order warning at or over this total. 0 turns it off.">
+          <input className={`${input} mt-1`} inputMode="decimal" value={fee.largeOrder} onChange={(e) => setFee({ ...fee, largeOrder: e.target.value })} />
         </Label>
         <Label text="Free delivery over ($, optional)" hint="Food total at or above this ships free.">
           <input className={`${input} mt-1`} inputMode="decimal" value={fee.freeOver} onChange={(e) => setFee({ ...fee, freeOver: e.target.value })} />

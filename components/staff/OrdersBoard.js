@@ -77,6 +77,14 @@ function OrderCard({ order, now, onStatus, onSpam, runs, onMove }) {
         <p className="mt-2 rounded-xl bg-rust/10 text-rust px-3 py-2 text-sm font-700">This run was cancelled. Move the order to another run, or cancel it and call the customer.</p>
       )}
 
+      {!done && order.flags?.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2" aria-label="Warnings">
+          {order.flags.includes("unverified") && <span className="rounded-full bg-gold text-ink px-3 py-1 font-mono text-[11px] uppercase tracking-widest">Address not checked: phone to confirm</span>}
+          {order.flags.includes("large") && <span className="rounded-full bg-gold text-ink px-3 py-1 font-mono text-[11px] uppercase tracking-widest">Large order</span>}
+          {order.flags.includes("new_customer") && <span className="rounded-full bg-ink/10 text-ink/70 px-3 py-1 font-mono text-[11px] uppercase tracking-widest">New customer</span>}
+        </div>
+      )}
+
       <p className="font-display font-700 text-lg mt-4">{order.customer_name}</p>
       <p className="mt-1">
         <a href={`tel:${order.phone}`} className="underline underline-offset-4 decoration-gold">{order.phone}</a>
@@ -166,6 +174,7 @@ export default function OrdersBoard({ initialOrders }) {
   const [notifPerm, setNotifPerm] = useState("unsupported");
   const [banner, setBanner] = useState("");
   const [offline, setOffline] = useState(false);
+  const [alerts, setAlerts] = useState([]); // open "driver needs help" alerts
   const failures = useRef(0);
   const lastRing = useRef(0);
   const wasOffline = useRef(false);
@@ -244,6 +253,11 @@ export default function OrdersBoard({ initialOrders }) {
   }, [soundOn]);
 
   // ---- polling
+  const loadAlerts = useCallback(() => {
+    fetch("/api/staff/alerts", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d) => d && setAlerts(d.alerts || [])).catch(() => {});
+  }, []);
+  useEffect(() => { loadAlerts(); }, [loadAlerts]); // an emergency already open when the screen loads shows straight away
+
   const refresh = useCallback(async () => {
     try {
       const res = await fetch("/api/orders", { cache: "no-store" });
@@ -261,6 +275,7 @@ export default function OrdersBoard({ initialOrders }) {
         setBanner("Back online. Check the orders below.");
       }
       setOrders(fresh);
+      loadAlerts();
       const arrived = fresh.filter((o) => o.id > knownMax.current && o.status === "new");
       if (fresh.length) knownMax.current = Math.max(knownMax.current, ...fresh.map((o) => o.id));
       if (arrived.length) {
@@ -278,7 +293,7 @@ export default function OrdersBoard({ initialOrders }) {
         setOffline(true);
       }
     }
-  }, [ring]);
+  }, [ring, loadAlerts]);
 
   useEffect(() => {
     let timer;
@@ -316,19 +331,39 @@ export default function OrdersBoard({ initialOrders }) {
     return () => clearInterval(id);
   }, [waiting, offline, nagging, soundOn, audioReady, ring]);
 
+  // a driver pressing Need help rings every 5 seconds until staff resolve it
+  useEffect(() => {
+    if (alerts.length === 0 || !soundOn || !audioReady) return;
+    ring();
+    const id = setInterval(ring, 5000);
+    return () => clearInterval(id);
+  }, [alerts.length, soundOn, audioReady, ring]);
+
+  async function resolveAlert(id) {
+    setAlerts((a) => a.filter((x) => x.id !== id));
+    try {
+      const res = await fetch("/api/staff/alerts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+      if (!res.ok && res.status !== 404) throw new Error();
+    } catch {
+      setError("Couldn't mark that alert as resolved. Try again.");
+      refresh();
+    }
+  }
+
   // flash the tab title so a waiting order is hard to miss
   const [flash, setFlash] = useState(false);
   useEffect(() => {
-    if (!waiting && !offline) return;
+    if (!waiting && !offline && alerts.length === 0) return;
     const id = setInterval(() => setFlash((f) => !f), 1000);
     return () => clearInterval(id);
-  }, [waiting, offline]);
+  }, [waiting, offline, alerts.length]);
 
   useEffect(() => {
+    if (alerts.length && flash) { document.title = "DRIVER NEEDS HELP"; return; }
     if (offline) { document.title = flash ? "NOT CONNECTED | Orders" : "Orders may be missing"; return; }
     if (waiting && flash) { document.title = `NEW ORDER (${waiting})`; return; }
     document.title = waiting ? `(${waiting}) New order | Macclesfield General Store` : "Orders | Macclesfield General Store";
-  }, [waiting, offline, flash]);
+  }, [waiting, offline, flash, alerts.length]);
 
   useEffect(() => {
     if (!waiting) setBanner((b) => (b.startsWith("Back online") ? b : ""));
@@ -398,6 +433,23 @@ export default function OrdersBoard({ initialOrders }) {
   const soundProblem = !soundOn ? "off" : !audioReady ? "blocked" : null;
   return (
     <div>
+      {alerts.map((a) => (
+        <div key={a.id} role="alert" className="mb-5 rounded-2xl bg-rust text-canvas-light px-5 py-4 animate-pulse">
+          <p className="font-display font-900 text-2xl">DRIVER NEEDS HELP: {a.driver_name}</p>
+          <p className="mt-1 text-sm">
+            Pressed {new Date(a.created_at).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })}
+            {a.presses > 1 ? ` (${a.presses} times)` : ""}. {a.carrying > 0 ? `Carrying ${a.carrying} order${a.carrying === 1 ? "" : "s"}.` : "Not carrying any orders."} Phone them now.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            {a.lat != null && a.lng != null ? (
+              <a href={`https://www.google.com/maps?q=${a.lat},${a.lng}`} target="_blank" rel="noreferrer" className={`${btn} bg-canvas-light text-ink`}>
+                Open location{a.accuracy ? ` (about ${Math.round(a.accuracy)} m)` : ""}
+              </a>
+            ) : <span className="text-sm">No location was sent.</span>}
+            <button onClick={() => resolveAlert(a.id)} className={`${btn} bg-gold text-ink`}>Resolved</button>
+          </div>
+        </div>
+      ))}
       {offline && (
         <div role="alert" className="mb-5 rounded-2xl bg-rust text-canvas-light px-5 py-4 font-display font-900 text-xl animate-pulse">
           NOT CONNECTED. You may be missing orders. Check the internet, or phone the store on a mobile if it stays red.

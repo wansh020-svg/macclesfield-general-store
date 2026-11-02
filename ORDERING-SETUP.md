@@ -297,3 +297,17 @@ message and the open runs. Customers can book any run for today, from the mornin
 - **Run finished: back at the shop** appears when everything is delivered, and the staff screen shows the run as Finished.
 - **Staff Orders screen > Delivery runs today** shows, for each run, how many orders are ready, being made, on the
   road and delivered, a **Ready to go** marker when everything in it is ready, and a **Map and route** button.
+
+## Driver safety and warnings on orders
+
+- **Need help (driver app):** a button near the top. It asks "Send an alert to the store?" (with a Call 000 button),
+  then sends the driver's location if the phone allows it. The staff Orders screen shows a red **DRIVER NEEDS HELP**
+  banner with the driver's name, how many orders they carry and a link to their location on a map, rings every
+  5 seconds (if sound is on) and flashes the tab title until staff press **Resolved**. Pressing again only updates
+  the same alert. If the text backup is set up, a text goes to the staff phones too (the first press only).
+  The alert is always recorded even if texts are capped. It shows the location only if the driver's phone allowed it.
+- **Warnings on orders** (quiet badges, nothing is blocked): **Address not checked: phone to confirm** for a
+  delivery whose address couldn't be found, **New customer** for a phone number with no completed order before,
+  and **Large order** at or over an amount you set in **Dashboard > Settings > Flag orders over ($)**
+  (default $100, 0 turns it off).
+- **No cash cap** on delivery orders, as decided.

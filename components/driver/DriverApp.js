@@ -239,6 +239,27 @@ export default function DriverApp({ driver, initialBoard }) {
   })();
   const cookingFor = (t) => (board.pending || []).find((p) => p.run_time === t)?.cooking || 0;
 
+  // "Need help": ask the phone where it is (a few seconds at most), then tell the store.
+  const [help, setHelp] = useState("idle"); // idle | confirm | sending | sent | failed
+  async function sendHelp() {
+    setHelp("sending");
+    const where = await new Promise((resolve) => {
+      if (!navigator.geolocation) return resolve({});
+      navigator.geolocation.getCurrentPosition(
+        (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy }),
+        () => resolve({}),
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 15000 }
+      );
+    });
+    try {
+      const res = await fetch("/api/driver/help", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(where) });
+      if (!res.ok) throw new Error();
+      setHelp("sent");
+    } catch {
+      setHelp("failed");
+    }
+  }
+
   async function logout() {
     await fetch("/api/driver/logout", { method: "POST" });
     router.refresh();
@@ -268,6 +289,44 @@ export default function DriverApp({ driver, initialBoard }) {
       )}
 
       {error && <p role="alert" className="mt-4 rounded-2xl bg-rust px-4 py-3 text-sm">{error}</p>}
+
+      <section aria-label="Need help" className="mt-4">
+        {help === "idle" && (
+          <button onClick={() => setHelp("confirm")} className="w-full rounded-full border-2 border-rust bg-rust/20 text-canvas-light font-display font-900 h-12">Need help</button>
+        )}
+        {help === "confirm" && (
+          <div className="rounded-3xl bg-rust p-5 space-y-3">
+            <p className="font-display font-900 text-xl">Send an alert to the store?</p>
+            <p className="text-sm text-canvas-light/90">Your location goes with it if your phone allows it. If you are in danger, call 000 first.</p>
+            <a href="tel:000" className="block text-center rounded-full bg-canvas-light text-ink font-display font-900 py-3">Call 000</a>
+            <div className="flex gap-3">
+              <button onClick={() => setHelp("idle")} className="flex-1 rounded-full border-2 border-canvas-light/60 font-display font-700 h-12">Cancel</button>
+              <button onClick={sendHelp} className="flex-1 rounded-full bg-gold text-ink font-display font-900 h-12">Send alert</button>
+            </div>
+          </div>
+        )}
+        {help === "sending" && <p role="status" className="rounded-2xl bg-rust px-4 py-3 font-display font-700">Sending... getting your location.</p>}
+        {help === "sent" && (
+          <div role="status" className="rounded-3xl bg-rust p-5 space-y-3">
+            <p className="font-display font-900 text-xl">The store has been alerted.</p>
+            <p className="text-sm">They will phone you. If you are in danger, call 000.</p>
+            <div className="flex gap-3">
+              <a href="tel:000" className="flex-1 text-center rounded-full bg-canvas-light text-ink font-display font-900 py-3">Call 000</a>
+              <button onClick={() => setHelp("idle")} className="flex-1 rounded-full border-2 border-canvas-light/60 font-display font-700 h-12">Okay</button>
+            </div>
+          </div>
+        )}
+        {help === "failed" && (
+          <div role="alert" className="rounded-3xl bg-rust p-5 space-y-3">
+            <p className="font-display font-900 text-xl">The alert didn&apos;t send.</p>
+            <p className="text-sm">Phone the store on (08) 8188 5301, or call 000 if you are in danger.</p>
+            <div className="flex gap-3">
+              <a href="tel:0881885301" className="flex-1 text-center rounded-full bg-gold text-ink font-display font-900 py-3">Call the store</a>
+              <button onClick={() => setHelp("confirm")} className="flex-1 rounded-full border-2 border-canvas-light/60 font-display font-700 h-12">Try again</button>
+            </div>
+          </div>
+        )}
+      </section>
 
       <h2 className="font-display font-900 text-2xl mt-8">On the road ({board.mine.length})</h2>
       <div className="mt-3 space-y-4">
