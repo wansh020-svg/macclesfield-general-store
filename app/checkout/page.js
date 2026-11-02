@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AddressField from "@/components/AddressField";
 import { useCart } from "@/components/CartContext";
@@ -24,6 +24,7 @@ export default function CheckoutPage() {
   const [unverified, setUnverified] = useState(false);
   const [saved, setSaved] = useState(""); // a returning customer's saved address, checked once
   const [submitting, setSubmitting] = useState(false);
+  const attempt = useRef(null); // one key per checkout visit, so a repeat tap or retry can't create a second order
   const [error, setError] = useState("");
   const [remember, setRemember] = useState(true);
   const router = useRouter();
@@ -65,6 +66,7 @@ export default function CheckoutPage() {
           addressProof: pickup ? undefined : chosen?.proof,
           unverified: pickup ? false : unverified,
           source: readSource(),
+          clientKey: (attempt.current ??= crypto.randomUUID()),
           website: form.website || "",
           notes: form.notes,
           items: items.map((i) => ({ itemId: i.itemId, dealId: i.dealId, size: i.size, options: i.options, qty: i.qty })),

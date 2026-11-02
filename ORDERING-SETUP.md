@@ -250,3 +250,18 @@ To offer a Coke bottle: add it in **Dashboard > Menu** with a price, then add it
 - The checkout form has a hidden box that only bots fill in. Those orders are quietly dropped.
 - On the Orders screen, a new order has a **Spam** button: it cancels the order and blocks that phone
   number. Blocked numbers are listed in **Dashboard > Settings > Blocked phone numbers**, with **Unblock**.
+
+## Making sure nobody misses an order
+
+- **Sound warning:** if alerts are off, or the browser has blocked sound, the Orders screen shows a big bar
+  with a button to fix it. Once an order has waited a minute, the alarm rings every 8 seconds (instead of
+  every 20) and a red bar says how long it has waited. The tab title flashes "NEW ORDER".
+- **Connection warning:** if the screen can't reach the server twice in a row, a red bar says NOT CONNECTED
+  and the alarm sounds until it reconnects, so a dead internet connection can't go unnoticed.
+- **No double orders:** each checkout visit has its own key; a second tap or a retry after a bad
+  connection returns the first order instead of creating another.
+- **Text message backup (optional, costs a few cents per text):** to get a text on a staff mobile for each
+  new order, create a Twilio account and add these in Vercel > Settings > Environment Variables, then
+  redeploy: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` (your Twilio number), and
+  `ALERT_PHONE` (staff mobile like +61412345678, several separated by commas). It stays off until all four
+  are set, and is capped at 40 texts an hour.

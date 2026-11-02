@@ -6,6 +6,8 @@ import { money } from "@/lib/format";
 import { chime } from "@/lib/chime";
 
 const POLL_VISIBLE = 8000;
+const NAG_AFTER = 60000; // an order unseen this long rings faster
+const NAG_RING = 8000;
 const POLL_HIDDEN = 30000;
 const REPEAT_RING = 20000; // keep ringing while an order is waiting to be accepted
 const PILL = {
@@ -138,6 +140,10 @@ export default function OrdersBoard({ initialOrders }) {
   const [audioReady, setAudioReady] = useState(false);
   const [notifPerm, setNotifPerm] = useState("unsupported");
   const [banner, setBanner] = useState("");
+  const [offline, setOffline] = useState(false);
+  const failures = useRef(0);
+  const lastRing = useRef(0);
+  const wasOffline = useRef(false);
   const [filter, setFilter] = useState("all"); // all | delivery | pickup
   const ctxRef = useRef(null);
   const knownMax = useRef(Math.max(0, ...initialOrders.map((o) => o.id)));
@@ -157,6 +163,7 @@ export default function OrdersBoard({ initialOrders }) {
   }, []);
 
   const ring = useCallback(() => {
+    lastRing.current = Date.now();
     if (soundRef.current && ctxRef.current?.state === "running") chime(ctxRef.current);
     try {
       navigator.vibrate?.([200, 100, 200]);
@@ -222,6 +229,12 @@ export default function OrdersBoard({ initialOrders }) {
       if (!res.ok) throw new Error("bad response");
       const { orders: fresh } = await res.json();
       setError("");
+      failures.current = 0;
+      setOffline(false);
+      if (wasOffline.current) {
+        wasOffline.current = false;
+        setBanner("Back online. Check the orders below.");
+      }
       setOrders(fresh);
       const arrived = fresh.filter((o) => o.id > knownMax.current && o.status === "new");
       if (fresh.length) knownMax.current = Math.max(knownMax.current, ...fresh.map((o) => o.id));
@@ -233,7 +246,12 @@ export default function OrdersBoard({ initialOrders }) {
         }
       }
     } catch {
+      failures.current += 1;
       setError("Can't reach the server. Retrying...");
+      if (failures.current >= 2) {
+        wasOffline.current = true;
+        setOffline(true);
+      }
     }
   }, [ring]);
 
@@ -256,17 +274,39 @@ export default function OrdersBoard({ initialOrders }) {
     };
   }, [refresh]);
 
-  // ---- keep ringing until every new order has been accepted or cancelled
-  const waiting = orders.filter((o) => o.status === "new").length;
+  // ---- keep ringing until every new order has been accepted or cancelled (faster once one has waited a minute)
+  const waitingOrders = orders.filter((o) => o.status === "new");
+  const waiting = waitingOrders.length;
+  const oldestWait = waiting ? now - Math.min(...waitingOrders.map((o) => new Date(o.created_at).getTime())) : 0;
+  const nagging = waiting > 0 && oldestWait > NAG_AFTER;
   useEffect(() => {
-    if (!waiting || !soundOn || !audioReady) return;
-    const id = setInterval(ring, REPEAT_RING);
+    if (!soundOn || !audioReady || (!waiting && !offline)) return;
+    const id = setInterval(() => {
+      const gap = offline ? REPEAT_RING : nagging ? NAG_RING : REPEAT_RING;
+      if (Date.now() - lastRing.current >= gap - 500) {
+        lastRing.current = Date.now();
+        ring();
+      }
+    }, 2000);
     return () => clearInterval(id);
-  }, [waiting, soundOn, audioReady, ring]);
+  }, [waiting, offline, nagging, soundOn, audioReady, ring]);
+
+  // flash the tab title so a waiting order is hard to miss
+  const [flash, setFlash] = useState(false);
+  useEffect(() => {
+    if (!waiting && !offline) return;
+    const id = setInterval(() => setFlash((f) => !f), 1000);
+    return () => clearInterval(id);
+  }, [waiting, offline]);
 
   useEffect(() => {
+    if (offline) { document.title = flash ? "NOT CONNECTED | Orders" : "Orders may be missing"; return; }
+    if (waiting && flash) { document.title = `NEW ORDER (${waiting})`; return; }
     document.title = waiting ? `(${waiting}) New order | Macclesfield General Store` : "Orders | Macclesfield General Store";
-    if (!waiting) setBanner("");
+  }, [waiting, offline, flash]);
+
+  useEffect(() => {
+    if (!waiting) setBanner((b) => (b.startsWith("Back online") ? b : ""));
   }, [waiting]);
 
   // ---- actions
@@ -315,8 +355,32 @@ export default function OrdersBoard({ initialOrders }) {
   const inProgress = shown.filter((o) => ["accepted", "ready", "out_for_delivery"].includes(o.status)).reverse();
   const finished = shown.filter((o) => isDone(o.status)).slice(0, 30);
 
+  const soundProblem = !soundOn ? "off" : !audioReady ? "blocked" : null;
   return (
     <div>
+      {offline && (
+        <div role="alert" className="mb-5 rounded-2xl bg-rust text-canvas-light px-5 py-4 font-display font-900 text-xl animate-pulse">
+          NOT CONNECTED. You may be missing orders. Check the internet, or phone the store on a mobile if it stays red.
+        </div>
+      )}
+      {soundProblem && (
+        <div role="alert" className={`mb-5 rounded-2xl px-5 py-4 ${waiting ? "bg-rust text-canvas-light" : "bg-gold text-ink"}`}>
+          <p className="font-display font-900 text-xl">
+            {soundProblem === "off" ? "Sound is OFF. You will not hear new orders." : "Sound is blocked by the browser."}
+          </p>
+          <button
+            onClick={soundProblem === "off" ? toggleSound : unlockAudio}
+            className={`${btn} mt-3 ${waiting ? "bg-canvas-light text-ink" : "bg-ink text-canvas-light"}`}
+          >
+            {soundProblem === "off" ? "Turn on alerts" : "Tap to enable sound"}
+          </button>
+        </div>
+      )}
+      {nagging && (
+        <div role="alert" className="mb-5 rounded-2xl bg-rust text-canvas-light px-5 py-4 font-display font-900 text-xl animate-pulse">
+          {waiting === 1 ? "1 order is" : `${waiting} orders are`} waiting {Math.max(1, Math.floor(oldestWait / 60000))} min or more. Accept or cancel {waiting === 1 ? "it" : "them"} to stop the alarm.
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <button
           onClick={toggleSound}

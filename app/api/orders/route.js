@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isStaff } from "@/lib/auth";
-import { allowHit, createOrder, digitsOf, getDelivery, getOrders, getPickup, isPhoneBlocked, priceCart, waitingOrdersFor } from "@/lib/db";
+import { allowHit, createOrder, digitsOf, getDelivery, getOrders, getPickup, isPhoneBlocked, orderByClientKey, priceCart, waitingOrdersFor } from "@/lib/db";
+import { smsConfigured, textStaff } from "@/lib/sms";
 import { haversineKm } from "@/lib/geo";
 import { describeWindows, pickupState, serviceState } from "@/lib/hours";
 import { ORDER_TYPES } from "@/lib/orderStatus";
@@ -33,6 +34,17 @@ export async function POST(request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
+  // The same checkout attempt twice (a double tap, or a retry after a bad connection) gets the first order back.
+  const clientKey = /^[A-Za-z0-9-]{16,64}$/.test(String(body.clientKey || "")) ? String(body.clientKey) : null;
+  if (clientKey) {
+    try {
+      const again = await orderByClientKey(clientKey);
+      if (again) return NextResponse.json({ success: true, order: again, repeat: true });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   // Bots: a hidden box real people never fill in, limits per internet address and per phone number,
   // a cap on orders waiting for staff, and numbers staff have blocked.
   if (clip(body.website, 100)) {
@@ -43,9 +55,14 @@ export async function POST(request) {
   try {
     if (await isPhoneBlocked(phone)) return NextResponse.json({ error: `We can't take this order online. ${call}` }, { status: 403 });
     if (!(await allowHit(`order-ip:${ip}`, 10, 10)) || !(await allowHit(`order-phone:${digitsOf(phone)}`, 4, 10))) {
+      // a simultaneous tap may have just placed this very order: hand it back instead of refusing
+      const first = clientKey ? await orderByClientKey(clientKey) : null;
+      if (first) return NextResponse.json({ success: true, order: first, repeat: true });
       return NextResponse.json({ error: `Too many orders in a short time. Please wait a few minutes. ${call}` }, { status: 429 });
     }
     if ((await waitingOrdersFor(phone)) >= 3) {
+      const first = clientKey ? await orderByClientKey(clientKey) : null;
+      if (first) return NextResponse.json({ success: true, order: first, repeat: true });
       return NextResponse.json({ error: `You already have orders waiting for us to confirm. ${call}` }, { status: 429 });
     }
   } catch (err) {
@@ -122,10 +139,22 @@ export async function POST(request) {
   const total = round2(priced.total + fee);
 
   try {
-    const order = await createOrder({
-      customerName, phone, address, notes, items: priced.items, estimatedTotal: total, deliveryFee: fee, place, source,
-      orderType, etaMinutes: pickup ? pickupCfg.prepMinutes : null,
-    });
+    let order;
+    try {
+      order = await createOrder({
+        customerName, phone, address, notes, items: priced.items, estimatedTotal: total, deliveryFee: fee, place, source,
+        orderType, etaMinutes: pickup ? pickupCfg.prepMinutes : null, clientKey,
+      });
+    } catch (err) {
+      // two taps at the same instant: the second hits the unique key, so hand back the first order
+      const first = err.code === "23505" && clientKey ? await orderByClientKey(clientKey) : null;
+      if (first) return NextResponse.json({ success: true, order: first, repeat: true });
+      throw err;
+    }
+    // Backup alert to the staff phone (only if set up; a cap stops a flood of texts costing money)
+    if (smsConfigured() && (await allowHit("sms", 40, 60).catch(() => false))) {
+      await textStaff(`New ${orderType} order #${order.id}: ${customerName}, ${dollars(total)}. Open the dashboard.`);
+    }
     return NextResponse.json({
       success: true,
       order: { id: order.id, created_at: order.created_at, total, subtotal: priced.total, deliveryFee: fee, token: order.track_token, type: orderType, etaMinutes: pickup ? pickupCfg.prepMinutes : null },
