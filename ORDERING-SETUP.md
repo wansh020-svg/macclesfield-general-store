@@ -284,3 +284,16 @@ message and the open runs. Customers can book any run for today, from the mornin
   one-off run. Each delivery order shows its run, and a **Move to** list sends it to another run, even a full one.
   If a run is cancelled its orders are flagged until they are moved or cancelled.
 - A cancelled order gives its place in the run back. Pickup is not affected.
+
+## Driver: runs, stop order and the map
+
+- **Ready for pickup** is grouped by run ("5:30pm run, 3 ready, 1 still being made"). **Start run** takes every
+  ready order in that run in one tap (it asks first if some are still being made).
+- **On the road** shows the stops numbered 1, 2, 3 in the **shortest driving order** from the shop (worked out
+  exactly for up to 8 stops, using straight-line distance). The driver can change it with the arrows, and their
+  order is then kept. An address that couldn't be placed on the map goes last, so phone to check it.
+- A free **OpenStreetMap** map (no key or account) shows the shop and numbered pins. **Whole run in Google Maps**
+  opens all the stops, in order, in turn-by-turn navigation; each stop also has its own Google, Apple and Call buttons.
+- **Run finished: back at the shop** appears when everything is delivered, and the staff screen shows the run as Finished.
+- **Staff Orders screen > Delivery runs today** shows, for each run, how many orders are ready, being made, on the
+  road and delivered, a **Ready to go** marker when everything in it is ready, and a **Map and route** button.

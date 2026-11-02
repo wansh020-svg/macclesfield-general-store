@@ -2,22 +2,35 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { chime } from "@/lib/chime";
+import { fmtTime } from "@/lib/hours";
 import { money } from "@/lib/format";
+
+const RunMap = dynamic(() => import("@/components/RunMap"), { ssr: false, loading: () => <div className="h-56 rounded-2xl bg-pine-dark/50" /> });
 
 const POLL_VISIBLE = 6000;
 const POLL_HIDDEN = 20000;
 const big = "rounded-full font-display font-900 text-lg h-14 px-6 active:scale-95 transition-transform";
 
-function MineCard({ order, busy, onAction }) {
+function MineCard({ order, busy, onAction, onMove, first, last }) {
   const [confirming, setConfirming] = useState(false);
   const [cash, setCash] = useState(String(order.estimated_total));
   // Verified orders navigate to the exact checked spot; unchecked ones fall back to the typed address.
   const dest = order.lat != null && order.lng != null ? `${order.lat},${order.lng}` : encodeURIComponent(order.address);
   return (
     <article className="rounded-3xl bg-canvas text-ink p-5">
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="font-display font-900 text-2xl">Order #{order.id}</p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="font-display font-900 text-2xl flex items-center gap-3">
+          <span className="w-10 h-10 rounded-full bg-rust text-canvas-light grid place-items-center text-xl" aria-label={`Stop ${order.stop}`}>{order.stop}</span>
+          Order #{order.id}
+        </p>
+        <span className="flex gap-2">
+          <button disabled={busy || first} onClick={() => onMove(order.id, -1)} aria-label={`Move order ${order.id} earlier`} className="w-10 h-10 rounded-full border-2 border-ink/25 disabled:opacity-30">&uarr;</button>
+          <button disabled={busy || last} onClick={() => onMove(order.id, 1)} aria-label={`Move order ${order.id} later`} className="w-10 h-10 rounded-full border-2 border-ink/25 disabled:opacity-30">&darr;</button>
+        </span>
+      </div>
+      <div className="flex items-baseline justify-between gap-3 mt-2">
         <p className="font-mono text-xs uppercase tracking-widest text-ink/50">{order.items.reduce((n, i) => n + i.qty, 0) === 1 ? "1 item" : `${order.items.reduce((n, i) => n + i.qty, 0)} items`}</p>
       </div>
 
@@ -40,7 +53,7 @@ function MineCard({ order, busy, onAction }) {
         <span className="font-display font-700">Collect cash</span>
         <span className="font-display font-900 text-3xl">{money(order.estimated_total)}</span>
       </div>
-      {Number(order.delivery_fee) > 0 && <p className="mt-1 text-xs font-mono uppercase tracking-widest text-canvas-light/60">includes {money(order.delivery_fee)} delivery fee</p>}
+      {Number(order.delivery_fee) > 0 && <p className="mt-1 text-xs font-mono uppercase tracking-widest text-ink/60">includes {money(order.delivery_fee)} delivery fee</p>}
 
       {!confirming ? (
         <div className="mt-4 space-y-3">
@@ -156,6 +169,76 @@ export default function DriverApp({ driver, initialBoard }) {
     }
   }
 
+  async function startRun(runTime, cooking) {
+    if (cooking > 0 && !window.confirm(`${cooking} order${cooking === 1 ? " is" : "s are"} still being made. Start the run without ${cooking === 1 ? "it" : "them"}?`)) return;
+    setBusyId(`run:${runTime}`);
+    setError("");
+    try {
+      const res = await fetch("/api/driver/runs/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ runTime }) });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) { router.refresh(); return; }
+      if (!res.ok) setError(data.error || "Something went wrong.");
+    } catch {
+      setError("No connection. Try again.");
+    } finally {
+      setBusyId(null);
+      refresh();
+    }
+  }
+
+  async function finishRun() {
+    setBusyId("finish");
+    setError("");
+    try {
+      const res = await fetch("/api/driver/runs/finish", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) setError(data.error || "Something went wrong.");
+    } catch {
+      setError("No connection. Try again.");
+    } finally {
+      setBusyId(null);
+      refresh();
+    }
+  }
+
+  async function moveStop(id, dir) {
+    const ids = board.mine.map((o) => o.id);
+    const k = ids.indexOf(id), j = k + dir;
+    if (k < 0 || j < 0 || j >= ids.length) return;
+    [ids[k], ids[j]] = [ids[j], ids[k]];
+    setBoard((b) => ({ ...b, mine: ids.map((x, n) => ({ ...b.mine.find((o) => o.id === x), stop: n + 1 })), route: { ...b.route, manual: true } }));
+    try {
+      const res = await fetch("/api/driver/orders/reorder", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids }) });
+      if (!res.ok) throw new Error();
+    } catch {
+      setError("Couldn't save the new order. Refreshing.");
+    } finally {
+      refresh();
+    }
+  }
+
+  // Every stop in the order they are listed, as one Google Maps trip from where the driver is now.
+  const tripUrl = (() => {
+    const where = (o) => (o.lat != null && o.lng != null ? `${o.lat},${o.lng}` : o.address);
+    const stops = board.mine.map(where);
+    if (stops.length === 0) return null;
+    const dest = encodeURIComponent(stops[stops.length - 1]);
+    const way = stops.slice(0, -1).map(encodeURIComponent).join("%7C");
+    return `https://www.google.com/maps/dir/?api=1&destination=${dest}${way ? `&waypoints=${way}` : ""}&travelmode=driving`;
+  })();
+
+  // ready orders grouped by the run they belong to
+  const groups = (() => {
+    const map = new Map();
+    for (const o of board.available) {
+      const key = o.run_time || "";
+      map.set(key, [...(map.get(key) || []), o]);
+    }
+    for (const p of board.pending || []) if (!map.has(p.run_time)) map.set(p.run_time, []);
+    return [...map.entries()].sort(([a], [b]) => (a || "99").localeCompare(b || "99"));
+  })();
+  const cookingFor = (t) => (board.pending || []).find((p) => p.run_time === t)?.cooking || 0;
+
   async function logout() {
     await fetch("/api/driver/logout", { method: "POST" });
     router.refresh();
@@ -189,21 +272,51 @@ export default function DriverApp({ driver, initialBoard }) {
       <h2 className="font-display font-900 text-2xl mt-8">On the road ({board.mine.length})</h2>
       <div className="mt-3 space-y-4">
         {board.mine.length === 0 && <p className="text-canvas-light/60">You have nothing to deliver. Take an order below when it's ready.</p>}
-        {board.mine.map((o) => <MineCard key={o.id} order={o} busy={busyId === o.id} onAction={act} />)}
+        {board.mine.length > 0 && (
+          <div className="rounded-3xl bg-pine px-5 py-4 space-y-3">
+            <p className="font-display font-700">
+              {board.mine.length} {board.mine.length === 1 ? "stop" : "stops"} &middot; about {board.route.km} km round trip &middot; <span className="font-900">{money(board.route.cash)}</span> cash to collect
+            </p>
+            <p className="text-xs text-canvas-light/70">{board.route.manual ? "Stops are in your order." : "Stops are in the shortest order. Use the arrows to change it."}</p>
+            <RunMap store={board.route.store} stops={board.mine.map((o) => ({ n: o.stop, lat: o.lat, lng: o.lng, label: o.customer_name }))} />
+            {tripUrl && <a href={tripUrl} target="_blank" rel="noreferrer" className="block text-center rounded-full bg-gold text-ink font-display font-900 py-3">Whole run in Google Maps</a>}
+          </div>
+        )}
+        {board.mine.map((o, k) => <MineCard key={o.id} order={o} busy={busyId === o.id} onAction={act} onMove={moveStop} first={k === 0} last={k === board.mine.length - 1} />)}
+        {board.canFinish && (
+          <button disabled={busyId === "finish"} onClick={finishRun} className={`${big} w-full bg-gold text-ink disabled:opacity-50`}>Run finished: back at the shop</button>
+        )}
       </div>
 
       <h2 className="font-display font-900 text-2xl mt-10">Ready for pickup ({board.available.length})</h2>
-      <div className="mt-3 space-y-3">
-        {board.available.length === 0 && <p className="text-canvas-light/60">No orders waiting. This page updates by itself.</p>}
-        {board.available.map((o) => (
-          <article key={o.id} className="rounded-3xl bg-pine p-5 flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className="font-display font-900 text-xl">Order #{o.id}</p>
-              <p className="text-canvas-light/70 truncate">{o.area}</p>
-              <p className="font-mono text-xs uppercase tracking-widest text-canvas-light/50 mt-1">{o.itemCount} {o.itemCount === 1 ? "item" : "items"} &middot; {money(o.total)} cash</p>
+      <div className="mt-3 space-y-6">
+        {groups.length === 0 && <p className="text-canvas-light/60">No orders waiting. This page updates by itself.</p>}
+        {groups.map(([time, list]) => (
+          <section key={time || "other"} aria-label={time ? `${fmtTime(time)} run` : "Other orders"} className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-display font-900 text-xl">{time ? `${fmtTime(time)} run` : "Other orders"}</p>
+                <p className="font-mono text-xs uppercase tracking-widest text-canvas-light/60">
+                  {list.length} ready{cookingFor(time) > 0 ? ` · ${cookingFor(time)} still being made` : ""}
+                </p>
+              </div>
+              {time && list.length > 0 && (
+                <button disabled={busyId === `run:${time}`} onClick={() => startRun(time, cookingFor(time))} className="rounded-full bg-gold text-ink font-display font-900 h-12 px-5 shrink-0 disabled:opacity-50 active:scale-95 transition-transform">
+                  Start run ({list.length})
+                </button>
+              )}
             </div>
-            <button disabled={busyId === o.id} onClick={() => act(o.id, "claim")} className="rounded-full bg-gold text-ink font-display font-900 text-lg h-12 px-6 shrink-0 disabled:opacity-50 active:scale-95 transition-transform">Pick up</button>
-          </article>
+            {list.map((o) => (
+              <article key={o.id} className="rounded-3xl bg-pine p-5 flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-display font-900 text-xl">Order #{o.id}</p>
+                  <p className="text-canvas-light/70 truncate">{o.area}</p>
+                  <p className="font-mono text-xs uppercase tracking-widest text-canvas-light/50 mt-1">{o.itemCount} {o.itemCount === 1 ? "item" : "items"} &middot; {money(o.total)} cash</p>
+                </div>
+                <button disabled={busyId === o.id} onClick={() => act(o.id, "claim")} className="rounded-full bg-gold text-ink font-display font-900 text-lg h-12 px-6 shrink-0 disabled:opacity-50 active:scale-95 transition-transform">Pick up</button>
+              </article>
+            ))}
+          </section>
         ))}
       </div>
     </main>

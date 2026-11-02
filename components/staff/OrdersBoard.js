@@ -442,7 +442,7 @@ export default function OrdersBoard({ initialOrders }) {
         </span>
       </div>
 
-      <RunsPanel refreshKey={orders.length} onRuns={setRuns} />
+      <RunsPanel refreshKey={orders.map((o) => o.status).join("")} onRuns={setRuns} orders={orders} />
 
       <div role="tablist" aria-label="Filter orders" className="flex gap-2 mb-5">
         {[["all", "All"], ["delivery", `Delivery (${activeCount("delivery")})`], ["pickup", `Pickup (${activeCount("pickup")})`]].map(([key, text]) => (
