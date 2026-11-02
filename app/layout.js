@@ -9,6 +9,7 @@ import { DAY_NAMES, storeWindows } from "@/lib/hours";
 import { getOrderingCached, publicOrdering } from "@/lib/db";
 import { SHOP, SITE_URL } from "@/lib/site";
 import { CartProvider } from "@/components/CartContext";
+import { Analytics } from "@vercel/analytics/next";
 import "@fontsource-variable/fraunces";
 import "@fontsource/work-sans/400.css";
 import "@fontsource/work-sans/500.css";
@@ -99,6 +100,7 @@ export default async function RootLayout({ children }) {
           <TabBar />
         </CartProvider>
         </OrderingProvider>
+        <Analytics />
       </body>
     </html>
   );

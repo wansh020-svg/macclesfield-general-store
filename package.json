@@ -12,6 +12,7 @@
     "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/work-sans": "^5.3.0",
+    "@vercel/analytics": "^2.0.1",
     "next": "14.2.5",
     "pg": "^8.23.1",
     "qrcode": "^1.5.4",
