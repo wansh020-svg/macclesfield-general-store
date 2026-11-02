@@ -229,3 +229,16 @@ Staff edit them in **Dashboard > Extras**:
 
 The server prices every extra itself and refuses anything not offered for that item, sold out, or
 against a pick-one rule, so a phone can't change a price.
+
+## Add-ons at checkout
+
+Before they enter their details, customers see **Add something to your order?** with a few quick extras
+(each has Add, then - and + so they can order as many as they like). They are ordinary menu items, so they
+share a cart line with the same item on the menu and are priced by the server like everything else.
+
+Staff edit the list in **Dashboard > Extras > Offered at checkout**: pick the menu item (and size), give it
+a short name if you like ("5 nugget pack"), switch it Showing/Hidden, or remove it. An item with no price,
+or one that is sold out, is skipped automatically. Starting list: Side of fries ($3, the "Side of chips with
+meal" item), 5 nugget pack ($5.50), 3 dim sims ($6.50), Samosa ($3.50).
+
+To offer a Coke bottle: add it in **Dashboard > Menu** with a price, then add it here.

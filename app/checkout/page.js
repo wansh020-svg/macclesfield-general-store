@@ -7,6 +7,7 @@ import { useCart } from "@/components/CartContext";
 import OrderTypeSwitch from "@/components/OrderTypeSwitch";
 import { typeName, useOrdering } from "@/components/OrderingContext";
 import { deliveryFee, minOrderProblem, round2 } from "@/lib/fees";
+import AddOns from "@/components/AddOns";
 import { SHOP } from "@/lib/site";
 import { money } from "@/lib/format";
 import { loadProfile, rememberOrder, saveProfile } from "@/lib/local";
@@ -104,6 +105,8 @@ export default function CheckoutPage() {
       </p>
 
       <OrderTypeSwitch className="mt-5" />
+
+      {serving && <AddOns />}
 
       {!serving && (
         <p role="status" className="mt-3 rounded-2xl bg-gold text-ink px-4 py-3 text-sm font-display font-700">
