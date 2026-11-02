@@ -3,13 +3,21 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { money } from "@/lib/format";
+import { SHOP } from "@/lib/site";
 
-const STEPS = [
+const DELIVERY_STEPS = [
   { key: "new", title: "Order received", sub: "We'll call to confirm." },
   { key: "accepted", title: "Being made", sub: "The kitchen has your order." },
   { key: "ready", title: "Ready", sub: "Waiting for a driver." },
   { key: "out_for_delivery", title: "On the way", sub: "Your driver is heading to you." },
   { key: "delivered", title: "Delivered", sub: "Enjoy! Pay cash to the driver." },
+];
+
+const pickupSteps = (eta) => [
+  { key: "new", title: "Order received", sub: "We'll start on it shortly." },
+  { key: "accepted", title: "Being made", sub: eta ? `Ready in about ${eta} minutes.` : "The kitchen has your order." },
+  { key: "ready", title: "Ready to collect", sub: `Come on in to ${SHOP.name}, ${SHOP.street}. Pay at the counter.` },
+  { key: "collected", title: "Collected", sub: "Enjoy!" },
 ];
 
 export default function TrackOrder({ token }) {
@@ -47,29 +55,34 @@ export default function TrackOrder({ token }) {
     );
   }
 
-  const cancelled = order.status === "cancelled";
-  const current = Math.max(0, STEPS.findIndex((s) => s.key === (order.status === "fulfilled" ? "delivered" : order.status)));
+  const pickup = order.type === "pickup";
+  const steps = pickup ? pickupSteps(order.etaMinutes) : DELIVERY_STEPS;
+  const doneStatus = pickup ? "collected" : "delivered";
+  const status = order.status === "fulfilled" ? "delivered" : order.status;
+  const cancelled = status === "cancelled";
+  const current = Math.max(0, steps.findIndex((s) => s.key === status));
+  const finished = status === doneStatus;
 
   return (
     <main className="max-w-md mx-auto px-5 pt-10 pb-24">
-      <p className="font-mono text-xs uppercase tracking-widest text-ink/50">Order #{order.id}</p>
+      <p className="font-mono text-xs uppercase tracking-widest text-ink/50">{pickup ? "Pickup" : "Delivery"} order #{order.id}</p>
       <h1 className="font-display font-900 text-4xl leading-none mt-2">
-        {cancelled ? "Order cancelled" : order.status === "delivered" ? "Delivered" : STEPS[current].title}
+        {cancelled ? "Order cancelled" : steps[current].title}
       </h1>
       {cancelled ? (
         <p className="mt-3 text-ink/70">Sorry, this order was cancelled. Please call the store on <a href="tel:0881885301" className="underline">(08) 8188 5301</a>.</p>
       ) : (
         <>
           <p className="mt-3 text-ink/70">
-            {order.status === "out_for_delivery" && order.driver ? `${order.driver} is on the way with your order.` : STEPS[current].sub}
+            {status === "out_for_delivery" && order.driver ? `${order.driver} is on the way with your order.` : steps[current].sub}
           </p>
           <ol className="mt-8 space-y-4">
-            {STEPS.map((s, i) => {
+            {steps.map((s, i) => {
               const done = i <= current;
               return (
                 <li key={s.key} className="flex items-center gap-4">
-                  <span className={`w-9 h-9 rounded-full grid place-items-center font-display font-900 shrink-0 ${done ? "bg-pine text-canvas-light" : "bg-ink/10 text-ink/40"} ${i === current && order.status !== "delivered" ? "ring-4 ring-gold" : ""}`}>
-                    {done ? "✓" : i + 1}
+                  <span className={`w-9 h-9 rounded-full grid place-items-center font-display font-900 shrink-0 ${done ? "bg-pine text-canvas-light" : "bg-ink/10 text-ink/40"} ${i === current && !finished ? "ring-4 ring-gold" : ""}`}>
+                    {done ? "\u2713" : i + 1}
                   </span>
                   <span className={done ? "font-display font-700 text-lg" : "text-ink/45 text-lg"}>{s.title}</span>
                 </li>
@@ -79,7 +92,7 @@ export default function TrackOrder({ token }) {
         </>
       )}
       <div className="mt-10 rounded-3xl bg-gold px-5 py-4 flex items-center justify-between">
-        <span className="font-display font-700">Pay cash on delivery</span>
+        <span className="font-display font-700">{pickup ? "Pay at the counter" : "Pay cash on delivery"}</span>
         <span className="font-display font-900 text-3xl">{money(order.total)}</span>
       </div>
       <p className="mt-6 text-sm text-ink/60">Questions? Call <a href="tel:0881885301" className="underline">(08) 8188 5301</a>. This page updates by itself.</p>

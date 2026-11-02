@@ -7,14 +7,16 @@ export const metadata = {
 export default function SuccessPage({ searchParams }) {
   const id = /^\d+$/.test(searchParams?.id || "") ? searchParams.id : null;
   const token = /^[0-9a-f-]{36}$/.test(searchParams?.t || "") ? searchParams.t : null;
+  const pickup = searchParams?.ty === "pickup";
   return (
     <section className="max-w-md mx-auto px-5 py-24 text-center">
       <span className="price-tag mb-4">Order Received</span>
       <h1 className="font-display font-900 text-3xl mt-4 mb-4">Thanks!</h1>
       {id && <p className="font-mono text-sm mb-3">Order #{id}</p>}
       <p className="text-ink/70">
-        We&apos;ve got your order and will call to confirm details and delivery time.
-        Payment is cash on delivery.
+        {pickup
+          ? "We've got your order and will have it ready to collect soon. Pay at the counter when you pick it up."
+          : "We've got your order and will call to confirm details and delivery time. Payment is cash on delivery."}
       </p>
       {token && (
         <Link href={`/track/${token}`} className="inline-block mt-8 rounded-full bg-gold text-ink font-display font-900 text-lg px-8 py-3">

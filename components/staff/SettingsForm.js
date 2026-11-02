@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { DAY_NAMES, describeWindows } from "@/lib/hours";
+import { describeWindows } from "@/lib/hours";
+import ScheduleEditor from "@/components/staff/ScheduleEditor";
+import PickupSettings from "@/components/staff/PickupSettings";
 import { btn, input, Label } from "@/components/staff/Bits";
 
 async function save(body) {
@@ -19,7 +21,7 @@ async function save(body) {
   return data;
 }
 
-export default function SettingsForm({ initial }) {
+export default function SettingsForm({ initial, initialPickup }) {
   const [d, setD] = useState(initial);
   const [radius, setRadius] = useState(String(initial.radiusKm));
   const [schedule, setSchedule] = useState(initial.schedule);
@@ -55,7 +57,6 @@ export default function SettingsForm({ initial }) {
     );
   }
 
-  const setDay = (i, patch) => setSchedule((sc) => sc.map((w, d) => (d === i ? (patch === null ? null : { ...(w || { open: "16:00", close: "20:00" }), ...patch }) : w)));
   const summary = describeWindows(schedule).map((l) => l.text).join(" and ") || "no deliveries";
 
   return (
@@ -82,29 +83,15 @@ export default function SettingsForm({ initial }) {
         </fieldset>
         <div className="space-y-2">
           <p className="font-mono text-xs uppercase tracking-widest text-ink/60">Weekly delivery times (Adelaide time)</p>
-          {DAY_NAMES.map((name, i) => (
-            <div key={name} className="flex flex-wrap items-center gap-3">
-              <label className="flex items-center gap-2 w-32">
-                <input type="checkbox" className="w-4 h-4" checked={Boolean(schedule[i])} onChange={(e) => setDay(i, e.target.checked ? {} : null)} />
-                {name}
-              </label>
-              {schedule[i] ? (
-                <span className="flex items-center gap-2">
-                  <input type="time" className={`${input} w-32`} value={schedule[i].open} onChange={(e) => setDay(i, { open: e.target.value })} aria-label={`${name} opens`} />
-                  <span>to</span>
-                  <input type="time" className={`${input} w-32`} value={schedule[i].close} onChange={(e) => setDay(i, { close: e.target.value })} aria-label={`${name} closes`} />
-                </span>
-              ) : (
-                <span className="text-ink/50 text-sm">No delivery</span>
-              )}
-            </div>
-          ))}
+          <ScheduleEditor schedule={schedule} onChange={setSchedule} prefix="Delivery" defaults={{ open: "16:00", close: "20:00" }} />
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button disabled={busy} onClick={() => run({ schedule }, () => "Delivery times saved. The website updates within a minute.")} className={`${btn} bg-rust text-canvas-light`}>Save times</button>
           <span className="text-sm text-ink/60">Customers will see: {summary}</span>
         </div>
       </section>
+
+      <PickupSettings initial={initialPickup} />
 
       <section className="rounded-3xl border-2 border-ink/15 bg-canvas-light p-5 space-y-4">
         <h2 className="font-display font-900 text-xl">Delivery area</h2>

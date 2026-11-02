@@ -14,18 +14,18 @@ function Card({ qr, shown, offer, t, when }) {
   return (
     <div className={`${t.page} flex flex-col text-center`} style={{ width: "105mm", height: "148.5mm", padding: "9mm 8mm 8mm" }}>
       <p className={`font-mono ${t.accent} uppercase`} style={{ fontSize: "3mm", letterSpacing: "0.2em" }}>{SHOP.name}</p>
-      <h2 className="font-display font-900 leading-[0.98]" style={{ fontSize: "11.5mm", marginTop: "4mm" }}>Hungry? We&apos;ll bring it over.</h2>
+      <h2 className="font-display font-900 leading-[0.98]" style={{ fontSize: "10mm", marginTop: "4mm" }}>Hungry? Pick it up or we&apos;ll bring it over.</h2>
       {offer ? (
         <p className="font-display font-900 bg-gold text-ink rounded-full self-center" style={{ fontSize: "4.2mm", padding: "1.8mm 5mm", marginTop: "4mm" }}>{offer}</p>
       ) : (
-        <p className={t.sub} style={{ fontSize: "4mm", marginTop: "4mm" }}>Coffee, brekkie, burgers and Punjabi curries.</p>
+        <p className={t.sub} style={{ fontSize: "4mm", marginTop: "4mm" }}>Coffee, brekkie, burgers and Punjabi curries. Order online for pickup or delivery.</p>
       )}
       <div className={`${t.qrTile} rounded-2xl self-center`} style={{ padding: "4mm", width: "44mm", height: "44mm", marginTop: "auto" }}>
         <div className="w-full h-full [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{ __html: qr }} />
       </div>
       <p className="font-display font-900" style={{ fontSize: "6mm", marginTop: "3mm" }}>Scan to order</p>
       <p className={`font-mono ${t.accent}`} style={{ fontSize: "3.2mm", marginTop: "1mm" }}>{shown}</p>
-      <p className={t.sub} style={{ fontSize: "3.2mm", marginTop: "3mm" }}>Delivery {when}. Pay cash on delivery.</p>
+      <p className={t.sub} style={{ fontSize: "3.2mm", marginTop: "3mm" }}>Pickup whenever we&apos;re open. Delivery {when}.</p>
       <p className="font-display font-700" style={{ fontSize: "3.6mm" }}>{SHOP.phone}</p>
     </div>
   );

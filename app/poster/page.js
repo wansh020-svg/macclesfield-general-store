@@ -27,18 +27,21 @@ export default async function PosterPage({ searchParams }) {
       <PrintBar title="A4 poster" light={light} offer={offer} hint="Print on a computer: A4, margins None, background graphics on." />
       <div className="overflow-x-auto py-6 print:py-0">
         <div style={{ width: "210mm", height: "297mm" }} className={`mx-auto ${t.page} flex flex-col overflow-hidden shadow-xl print:shadow-none`}>
-          <div className="relative" style={{ height: "100mm" }}>
+          <div className="relative" style={{ height: "88mm" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/hero.jpg" alt="" className="w-full h-full object-cover" style={{ objectPosition: "50% 30%" }} />
             <div className={`absolute inset-x-0 bottom-0 bg-gradient-to-t ${t.fadeFrom} to-transparent`} style={{ height: "40mm" }} />
           </div>
 
           <div className="relative z-10 flex-1 flex flex-col" style={{ padding: "0 14mm 12mm", marginTop: "-6mm" }}>
-            <h1 className="font-display font-900 leading-[0.95]" style={{ fontSize: "21mm" }}>Hungry? We&apos;ll bring it over.</h1>
+            <h1 className="font-display font-900 leading-[0.95]" style={{ fontSize: "19mm" }}>Hungry? Pick it up or we&apos;ll bring it over.</h1>
             <p style={{ fontSize: "5.2mm", marginTop: "5mm", maxWidth: "150mm" }} className={t.sub}>
-              Coffee, brekkie, burgers and proper Punjabi curries from your local general store. Order online and pay cash when it arrives.
+              Coffee, brekkie, burgers and proper Punjabi curries from your local general store. Order online for pickup or delivery.
             </p>
             <p className="font-display font-900 border-2 border-current rounded-full self-start" style={{ fontSize: "5.4mm", padding: "2mm 6mm", marginTop: "6mm" }}>
+              Pickup whenever we&apos;re open
+            </p>
+            <p className="font-display font-900 border-2 border-current rounded-full self-start" style={{ fontSize: "5.4mm", padding: "2mm 6mm", marginTop: "3mm" }}>
               Delivery {when}
             </p>
             {offer && (
@@ -54,8 +57,8 @@ export default async function PosterPage({ searchParams }) {
                 <p className={`font-mono ${t.accent}`} style={{ fontSize: "5.2mm", marginTop: "4mm" }}>{shown}</p>
                 <ol className="font-display font-700" style={{ fontSize: "5.2mm", marginTop: "6mm", display: "grid", gap: "2mm" }}>
                   <li><span className={`${t.accent} font-900`}>1</span>&nbsp; Pick your food</li>
-                  <li><span className={`${t.accent} font-900`}>2</span>&nbsp; We&apos;ll call to confirm</li>
-                  <li><span className={`${t.accent} font-900`}>3</span>&nbsp; Pay cash at the door</li>
+                  <li><span className={`${t.accent} font-900`}>2</span>&nbsp; Choose pickup or delivery</li>
+                  <li><span className={`${t.accent} font-900`}>3</span>&nbsp; Pay cash, door or counter</li>
                 </ol>
               </div>
             </div>

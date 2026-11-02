@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AddressField from "@/components/AddressField";
 import { useCart } from "@/components/CartContext";
-import DeliveryStatus from "@/components/DeliveryStatus";
-import { useDelivery } from "@/components/DeliveryContext";
+import OrderTypeSwitch from "@/components/OrderTypeSwitch";
+import { typeName, useOrdering } from "@/components/OrderingContext";
+import { SHOP } from "@/lib/site";
 import { money } from "@/lib/format";
 import { loadProfile, rememberOrder, saveProfile } from "@/lib/local";
 import { readSource } from "@/components/SourceTracker";
@@ -14,7 +15,8 @@ const field = "w-full rounded-2xl border-2 border-ink/15 bg-canvas-light px-4 py
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
-  const { open: delivering } = useDelivery();
+  const { open: serving, orderType, other, states, prepMinutes } = useOrdering();
+  const pickup = orderType === "pickup";
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
   const [chosen, setChosen] = useState(null);
   const [unverified, setUnverified] = useState(false);
@@ -30,13 +32,14 @@ export default function CheckoutPage() {
     if ((p.address || "").trim().length >= 4) setSaved(p.address);
   }, []);
 
-  const addressReady = Boolean(chosen) || unverified;
+  // a pickup has no address to check
+  const addressReady = pickup || Boolean(chosen) || unverified;
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    if (!form.name || !form.phone || !form.address) {
-      setError("Please fill in your name, phone, and address.");
+    if (!form.name || !form.phone || (!pickup && !form.address)) {
+      setError(pickup ? "Please fill in your name and phone." : "Please fill in your name, phone, and address.");
       return;
     }
     if (!addressReady) {
@@ -52,9 +55,10 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           customerName: form.name,
           phone: form.phone,
-          address: form.address,
-          addressProof: chosen?.proof,
-          unverified,
+          orderType,
+          address: pickup ? "" : form.address,
+          addressProof: pickup ? undefined : chosen?.proof,
+          unverified: pickup ? false : unverified,
           source: readSource(),
           notes: form.notes,
           items: items.map((i) => ({ itemId: i.itemId, dealId: i.dealId, size: i.size, qty: i.qty })),
@@ -66,11 +70,11 @@ export default function CheckoutPage() {
 
       if (remember) saveProfile(form);
       rememberOrder({
-        id: data.order.id, token: data.order.token, at: Date.now(), total: data.order.total,
+        id: data.order.id, token: data.order.token, type: orderType, at: Date.now(), total: data.order.total,
         items: items.map((i) => ({ key: i.key, name: i.name, price: i.price, qty: i.qty, itemId: i.itemId, dealId: i.dealId, size: i.size })),
       });
       clearCart();
-      router.push(`/checkout/success?id=${data.order.id}&t=${data.order.token}`);
+      router.push(`/checkout/success?id=${data.order.id}&t=${data.order.token}&ty=${orderType}`);
     } catch (err) {
       setError(err.message && err.message !== "Failed to place order"
         ? err.message
@@ -90,12 +94,19 @@ export default function CheckoutPage() {
 
   return (
     <section className="max-w-md mx-auto px-5 pt-8 pb-16">
-      <h1 className="font-display font-900 text-4xl leading-none">Where to?</h1>
+      <h1 className="font-display font-900 text-4xl leading-none">{pickup ? "Pick up" : "Where to?"}</h1>
       <p className="text-ink/60 mt-2">
-        Cash on delivery: <span className="font-display font-900 text-ink">{money(total)}</span>. No card needed.
+        {pickup ? "Pay at the counter" : "Cash on delivery"}: <span className="font-display font-900 text-ink">{money(total)}</span>. No card needed online.
       </p>
 
-      {!delivering && <DeliveryStatus className="mt-5" />}
+      <OrderTypeSwitch className="mt-5" />
+
+      {!serving && (
+        <p role="status" className="mt-3 rounded-2xl bg-gold text-ink px-4 py-3 text-sm font-display font-700">
+          {typeName(orderType)} isn&apos;t open right now.{" "}
+          {states[other].open ? `${typeName(other)} is open: tap it above.` : "Ordering opens when pickup or delivery does."}
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
         <input type="text" placeholder="Full name" autoComplete="name" value={form.name}
@@ -103,6 +114,14 @@ export default function CheckoutPage() {
         <input type="tel" placeholder="Phone number" autoComplete="tel" value={form.phone}
           onChange={(e) => setForm({ ...form, phone: e.target.value })} className={field} />
 
+        {pickup ? (
+          <div className="rounded-2xl bg-pine text-canvas-light px-4 py-4">
+            <p className="font-display font-900 text-lg">Ready in about {prepMinutes} minutes</p>
+            <p className="text-sm text-canvas-light/80 mt-1">
+              Collect from {SHOP.name}, {SHOP.street}, {SHOP.locality}. We&apos;ll have it ready at the counter.
+            </p>
+          </div>
+        ) : (
         <AddressField
           value={form.address}
           onText={(text) => { setForm((f) => ({ ...f, address: text })); setChosen(null); setUnverified(false); }}
@@ -112,17 +131,18 @@ export default function CheckoutPage() {
           onUnverified={() => setUnverified(true)}
           autoCheck={saved}
         />
+        )}
 
-        <textarea placeholder="Notes: unit number, gate code, anything else (optional)" rows={3} value={form.notes}
+        <textarea placeholder={pickup ? "Notes (optional)" : "Notes: unit number, gate code, anything else (optional)"} rows={3} value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })} className={field} />
         <label className="flex items-center gap-2 text-sm text-ink/70">
           <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
           Remember my details on this phone
         </label>
         {error && <p role="alert" className="rounded-2xl bg-rust/10 text-rust px-4 py-3 text-sm">{error}</p>}
-        <button type="submit" disabled={submitting || !addressReady || !delivering}
+        <button type="submit" disabled={submitting || !addressReady || !serving}
           className="w-full rounded-full bg-rust text-canvas-light font-display font-900 text-xl h-14 disabled:opacity-50 active:scale-95 transition-transform">
-          {submitting ? "Placing order..." : !delivering ? "Not delivering right now" : addressReady ? "Place order" : "Check your address to continue"}
+          {submitting ? "Placing order..." : !serving ? `${typeName(orderType)} isn't open right now` : addressReady ? (pickup ? "Place pickup order" : "Place order") : "Check your address to continue"}
         </button>
       </form>
     </section>

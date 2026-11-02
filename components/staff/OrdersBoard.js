@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LABEL, isDone } from "@/lib/orderStatus";
+import { isDone, labelFor } from "@/lib/orderStatus";
 import { money } from "@/lib/format";
 import { chime } from "@/lib/chime";
 
@@ -14,6 +14,7 @@ const PILL = {
   ready: "bg-sage text-canvas-light",
   out_for_delivery: "bg-clay text-canvas-light",
   delivered: "bg-ink/10 text-ink/60",
+  collected: "bg-ink/10 text-ink/60",
   fulfilled: "bg-ink/10 text-ink/60",
   cancelled: "bg-rust/15 text-rust",
 };
@@ -29,17 +30,23 @@ function ago(iso, now) {
 
 function OrderCard({ order, now, onStatus }) {
   const done = isDone(order.status);
+  const pickup = order.order_type === "pickup";
   return (
     <article className={`rounded-3xl border-2 p-5 ${order.status === "new" ? "border-gold bg-gold/10" : "border-ink/15 bg-canvas-light"} ${done ? "opacity-70" : ""}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-display font-900 text-2xl leading-none">Order #{order.id}</p>
+          <p className="font-display font-900 text-2xl leading-none">
+            Order #{order.id}{" "}
+            <span className={`align-middle rounded-full px-2.5 py-1 font-mono text-[11px] uppercase tracking-widest ${pickup ? "bg-gold text-ink" : "bg-ink text-canvas-light"}`}>
+              {pickup ? "Pickup" : "Delivery"}
+            </span>
+          </p>
           <p className="font-mono text-xs uppercase tracking-widest text-ink/50 mt-1">
             {ago(order.created_at, now)}{order.source ? ` · via ${order.source}` : ""}
           </p>
         </div>
         <span className={`rounded-full px-3 py-1 font-mono text-[11px] uppercase tracking-widest ${PILL[order.status] || PILL.delivered}`}>
-          {LABEL[order.status] || order.status}
+          {labelFor(order.status, order.order_type)}
         </span>
       </div>
 
@@ -47,21 +54,30 @@ function OrderCard({ order, now, onStatus }) {
       <p className="mt-1">
         <a href={`tel:${order.phone}`} className="underline underline-offset-4 decoration-gold">{order.phone}</a>
       </p>
-      {order.address_status === "unverified" && (
-        <p className="mt-2 inline-block rounded-full bg-rust text-canvas-light px-3 py-1 font-mono text-[11px] uppercase tracking-widest">
-          Address not checked: call to confirm
+      {pickup && (
+        <p className="mt-2 inline-block rounded-full bg-gold/30 text-ink px-3 py-1 font-mono text-[11px] uppercase tracking-widest">
+          Customer collects{order.eta_minutes ? ` · ready in about ${order.eta_minutes} min` : ""}
         </p>
       )}
-      {order.address_status === "verified" && order.distance_km != null && (
-        <p className="mt-2 inline-block rounded-full bg-sage/20 text-sage px-3 py-1 font-mono text-[11px] uppercase tracking-widest">
-          {order.distance_km} km away
-        </p>
+      {!pickup && (
+        <>
+          {order.address_status === "unverified" && (
+            <p className="mt-2 inline-block rounded-full bg-rust text-canvas-light px-3 py-1 font-mono text-[11px] uppercase tracking-widest">
+              Address not checked: call to confirm
+            </p>
+          )}
+          {order.address_status === "verified" && order.distance_km != null && (
+            <p className="mt-2 inline-block rounded-full bg-sage/20 text-sage px-3 py-1 font-mono text-[11px] uppercase tracking-widest">
+              {order.distance_km} km away
+            </p>
+          )}
+          <p className="mt-1">
+            <a href={`https://maps.google.com/?q=${encodeURIComponent(order.address)}`} target="_blank" rel="noreferrer" className="underline underline-offset-4 decoration-gold">
+              {order.address}
+            </a>
+          </p>
+        </>
       )}
-      <p className="mt-1">
-        <a href={`https://maps.google.com/?q=${encodeURIComponent(order.address)}`} target="_blank" rel="noreferrer" className="underline underline-offset-4 decoration-gold">
-          {order.address}
-        </a>
-      </p>
 
       <ul className="mt-4 space-y-1 text-ink/90">
         {order.items.map((it, i) => (
@@ -84,7 +100,7 @@ function OrderCard({ order, now, onStatus }) {
       )}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <span className="font-display font-900 text-2xl">{money(order.estimated_total || 0)} <span className="font-mono text-xs uppercase tracking-widest text-ink/50">cash</span></span>
+        <span className="font-display font-900 text-2xl">{money(order.estimated_total || 0)} <span className="font-mono text-xs uppercase tracking-widest text-ink/50">{pickup ? "at the counter" : "cash"}</span></span>
         <div className="flex flex-wrap gap-2">
           {order.status === "new" && (
             <>
@@ -95,11 +111,14 @@ function OrderCard({ order, now, onStatus }) {
           {order.status === "accepted" && (
             <>
               <button onClick={() => onStatus(order, "cancelled")} className={`${btn} border-2 border-rust text-rust`}>Cancel</button>
-              <button onClick={() => onStatus(order, "ready")} className={`${btn} bg-sage text-canvas-light`}>Ready</button>
+              <button onClick={() => onStatus(order, "ready")} className={`${btn} bg-sage text-canvas-light`}>{pickup ? "Ready to collect" : "Ready"}</button>
             </>
           )}
           {order.status === "ready" && (
-            <button onClick={() => onStatus(order, "cancelled")} className={`${btn} border-2 border-rust text-rust`}>Cancel</button>
+            <>
+              <button onClick={() => onStatus(order, "cancelled")} className={`${btn} border-2 border-rust text-rust`}>Cancel</button>
+              {pickup && <button onClick={() => onStatus(order, "collected")} className={`${btn} bg-ink text-canvas-light`}>Mark collected</button>}
+            </>
           )}
           {order.status === "out_for_delivery" && (
             <button onClick={() => onStatus(order, "delivered")} className={`${btn} bg-ink text-canvas-light`}>Mark delivered</button>
@@ -118,6 +137,7 @@ export default function OrdersBoard({ initialOrders }) {
   const [audioReady, setAudioReady] = useState(false);
   const [notifPerm, setNotifPerm] = useState("unsupported");
   const [banner, setBanner] = useState("");
+  const [filter, setFilter] = useState("all"); // all | delivery | pickup
   const ctxRef = useRef(null);
   const knownMax = useRef(Math.max(0, ...initialOrders.map((o) => o.id)));
   const soundRef = useRef(false);
@@ -206,7 +226,7 @@ export default function OrdersBoard({ initialOrders }) {
       if (fresh.length) knownMax.current = Math.max(knownMax.current, ...fresh.map((o) => o.id));
       if (arrived.length) {
         ring();
-        setBanner(arrived.length === 1 ? `New order #${arrived[0].id} from ${arrived[0].customer_name}` : `${arrived.length} new orders`);
+        setBanner(arrived.length === 1 ? `New ${arrived[0].order_type === "pickup" ? "pickup" : "delivery"} order #${arrived[0].id} from ${arrived[0].customer_name}` : `${arrived.length} new orders`);
         if (typeof Notification !== "undefined" && Notification.permission === "granted" && document.hidden) {
           new Notification("New order", { body: `#${arrived[0].id} · ${arrived[0].customer_name}` });
         }
@@ -274,9 +294,11 @@ export default function OrdersBoard({ initialOrders }) {
     }
   }
 
-  const needsAction = orders.filter((o) => o.status === "new");
-  const inProgress = orders.filter((o) => ["accepted", "ready", "out_for_delivery"].includes(o.status)).reverse();
-  const finished = orders.filter((o) => isDone(o.status)).slice(0, 30);
+  const shown = orders.filter((o) => filter === "all" || (o.order_type || "delivery") === filter);
+  const activeCount = (type) => orders.filter((o) => (o.order_type || "delivery") === type && !isDone(o.status)).length;
+  const needsAction = shown.filter((o) => o.status === "new");
+  const inProgress = shown.filter((o) => ["accepted", "ready", "out_for_delivery"].includes(o.status)).reverse();
+  const finished = shown.filter((o) => isDone(o.status)).slice(0, 30);
 
   return (
     <div>
@@ -299,6 +321,15 @@ export default function OrdersBoard({ initialOrders }) {
               : "Tap anywhere on the page to switch the sound on."
             : "Switch on to hear a chime for each new order."}
         </span>
+      </div>
+
+      <div role="tablist" aria-label="Filter orders" className="flex gap-2 mb-5">
+        {[["all", "All"], ["delivery", `Delivery (${activeCount("delivery")})`], ["pickup", `Pickup (${activeCount("pickup")})`]].map(([key, text]) => (
+          <button key={key} role="tab" aria-selected={filter === key} onClick={() => setFilter(key)}
+            className={`rounded-full px-4 py-2 font-display font-700 text-sm border-2 ${filter === key ? "bg-pine text-canvas-light border-pine" : "border-ink/15 text-ink/70 bg-canvas-light"}`}>
+            {text}
+          </button>
+        ))}
       </div>
 
       {banner && (

@@ -19,14 +19,14 @@ function Panel({ qr, shown, offer, t, flip, when }) {
     >
       <div className="flex-1">
         <p className={`font-mono uppercase ${t.accent}`} style={{ fontSize: "3.2mm", letterSpacing: "0.2em" }}>{SHOP.name}</p>
-        <h2 className="font-display font-900 leading-[0.98]" style={{ fontSize: "11mm", marginTop: "2.5mm" }}>Love it? We&apos;ll bring it over next time.</h2>
+        <h2 className="font-display font-900 leading-[0.98]" style={{ fontSize: "11mm", marginTop: "2.5mm" }}>Love it? Order online next time.</h2>
         {offer ? (
           <p className="font-display font-900 bg-gold text-ink rounded-full inline-block" style={{ fontSize: "4mm", padding: "1.6mm 5mm", marginTop: "3mm" }}>{offer}</p>
         ) : (
-          <p className={t.sub} style={{ fontSize: "4mm", marginTop: "3mm" }}>Order online and pay cash when it arrives.</p>
+          <p className={t.sub} style={{ fontSize: "4mm", marginTop: "3mm" }}>Pick it up from the counter, or have it delivered.</p>
         )}
-        <p className={t.sub} style={{ fontSize: "3.6mm", marginTop: "3mm" }}>Delivery {when} &nbsp;&middot;&nbsp; {SHOP.phone}</p>
-        <p className={`font-mono ${t.accent}`} style={{ fontSize: "3.4mm", marginTop: "1mm" }}>{shown}</p>
+        <p className={t.sub} style={{ fontSize: "3.6mm", marginTop: "3mm" }}>Pickup whenever we&apos;re open &nbsp;&middot;&nbsp; Delivery {when}</p>
+        <p className={`font-mono ${t.accent}`} style={{ fontSize: "3.4mm", marginTop: "1mm" }}>{shown} &nbsp;&middot;&nbsp; {SHOP.phone}</p>
       </div>
       <div className="text-center shrink-0">
         <div className={`${t.qrTile} rounded-2xl`} style={{ padding: "3.5mm", width: "40mm", height: "40mm" }}>

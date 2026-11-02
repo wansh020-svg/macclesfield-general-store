@@ -21,6 +21,7 @@ export async function PATCH(request, { params }) {
     if (!found) return NextResponse.json({ error: "Order not found" }, { status: 404 });
     return NextResponse.json({ success: true });
   } catch (err) {
+    if (/^A (pickup|delivery) order can't/.test(err.message)) return NextResponse.json({ error: err.message }, { status: 400 });
     console.error(err);
     return NextResponse.json({ error: "Could not update the order" }, { status: 500 });
   }

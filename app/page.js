@@ -1,6 +1,6 @@
 import Link from "next/link";
 import OpenStatus from "@/components/OpenStatus";
-import DeliveryStatus from "@/components/DeliveryStatus";
+import ServiceStatus from "@/components/ServiceStatus";
 import ShopHours from "@/components/ShopHours";
 import CartBar from "@/components/CartBar";
 import { DealBanner, DealCard, Row } from "@/components/Cards";
@@ -21,9 +21,9 @@ async function safe(fn) {
 }
 
 const STEPS = [
-  ["1", "Pick your food", "Swipe the shelves and tap +."],
+  ["1", "Pick your food", "Swipe the shelves and tap +, then choose pickup or delivery."],
   ["2", "Place your order", "We'll call to confirm."],
-  ["3", "Pay cash at the door", "No card needed online."],
+  ["3", "Pay cash", "At the door for delivery, or at the counter for pickup."],
 ];
 
 export default async function Home() {
@@ -51,12 +51,12 @@ export default async function Home() {
             <OpenStatus />
           </span>
           <h1 className="font-display font-900 text-5xl sm:text-7xl leading-[0.98] mt-5 max-w-xl">
-            Hungry? We&apos;ll bring it over.
+            Hungry? Pick it up or we&apos;ll bring it over.
           </h1>
           <p className="mt-4 text-canvas-light/80 text-lg max-w-md">
-            Coffee, brekkie, burgers and proper Punjabi curries from Macclesfield&apos;s own general store.
+            Coffee, brekkie, burgers and proper Punjabi curries from Macclesfield&apos;s own general store. Order online for pickup or delivery.
           </p>
-          <DeliveryStatus variant="chip" className="mt-5" />
+          <ServiceStatus variant="chip" className="mt-5" />
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <Link
               href="/order"
@@ -73,9 +73,9 @@ export default async function Home() {
 
       <div className="bg-gold text-ink overflow-x-auto [scrollbar-width:none]">
         <p className="flex gap-6 whitespace-nowrap px-5 py-3 font-display font-900 text-sm uppercase tracking-wide justify-center">
+          <span>Pickup anytime we&apos;re open</span><span aria-hidden="true">&bull;</span>
           <span>Delivery {deliveryText}</span><span aria-hidden="true">&bull;</span>
-          <span>Dine-in &amp; takeaway</span><span aria-hidden="true">&bull;</span>
-          <span>Cash on delivery</span>
+          <span>Dine-in</span>
         </p>
       </div>
 

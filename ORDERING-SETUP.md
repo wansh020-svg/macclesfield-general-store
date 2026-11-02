@@ -169,3 +169,23 @@ can't be faked.
   **Following the weekly times** afterwards.
 - **Dine-in hours** (Mon to Thu 6:30am to 6:30pm; Fri to Sun 6:30am to 8pm) are set in the code, in
   `SHOP.hours` in `lib/site.js`. Change them there and they update everywhere on the site.
+
+## Pickup as well as delivery
+
+Customers choose **Pickup** or **Delivery** in the cart and at checkout. Each has its own opening
+times, so on a Monday morning pickup can be open while delivery is closed (the site pre-selects the
+open one and tells the customer).
+
+- **Pickup** needs only a name and phone number: no address and no distance check. It shows
+  "Ready in about N minutes" and the shop's address. The customer pays **at the counter**.
+- **Pickup times** are in **Dashboard > Settings > Pickup times**. By default they follow the dine-in
+  hours, and pickup orders stop **15 minutes before closing** (change "Last orders"). The same
+  **Open now** and **Paused** switches exist for pickup and delivery separately. "Usual prep time"
+  (default 15 minutes) is what customers are told.
+- **Staff Orders screen:** each order has a **Pickup** or **Delivery** badge, and there are
+  All / Delivery / Pickup tabs. A pickup goes **Accept, Ready to collect, Mark collected**: no driver
+  step. A pickup shows no address or map link.
+- **Drivers never see pickup orders**: the server leaves them out of the driver app and refuses a
+  claim even if someone tries to guess the order number.
+- **Tracking page:** pickup customers see Received, Being made, **Ready to collect**, Collected.
+- The status "collected" is only for pickups, and "out for delivery" / "delivered" only for deliveries.

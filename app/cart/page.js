@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useCart } from "@/components/CartContext";
-import DeliveryStatus from "@/components/DeliveryStatus";
-import { useDelivery } from "@/components/DeliveryContext";
+import OrderTypeSwitch from "@/components/OrderTypeSwitch";
+import { typeName, useOrdering } from "@/components/OrderingContext";
 
 export default function CartPage() {
   const { items, updateQty, removeItem, total, count } = useCart();
-  const { open } = useDelivery();
+  const { open, orderType, other, states } = useOrdering();
 
   if (items.length === 0) {
     return (
@@ -71,9 +71,15 @@ export default function CartPage() {
         ))}
       </ul>
 
-      {!open && <DeliveryStatus className="mt-6" />}
+      <OrderTypeSwitch className="mt-6" />
+      {!open && (
+        <p role="status" className="mt-3 rounded-2xl bg-gold text-ink px-4 py-3 text-sm font-display font-700">
+          {typeName(orderType)} isn&apos;t open right now.{" "}
+          {states[other].open ? `${typeName(other)} is open: tap it above.` : "Ordering opens when pickup or delivery does."}
+        </p>
+      )}
       <p className="text-ink/50 text-sm mt-6">
-        Payment is cash on delivery. The final total is worked out when you place the order.
+        Pay cash on delivery, or at the counter for pickup. The final total is worked out when you place the order.
       </p>
 
       <div className="fixed bottom-0 inset-x-0 z-50 bg-canvas border-t border-ink/10 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
@@ -91,7 +97,7 @@ export default function CartPage() {
             </Link>
           ) : (
             <span aria-disabled="true" className="block text-center rounded-full bg-ink/15 text-ink/50 font-display font-700 text-lg py-4">
-              Checkout opens when delivery does
+              Checkout opens when you can order
             </span>
           )}
         </div>

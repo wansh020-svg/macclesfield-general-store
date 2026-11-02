@@ -11,8 +11,8 @@ export async function GET(_req, { params }) {
     if (!o) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(
       {
-        id: o.id, status: o.status, total: o.estimated_total, created_at: o.created_at,
-        accepted_at: o.accepted_at, ready_at: o.ready_at, picked_up_at: o.picked_up_at, delivered_at: o.delivered_at,
+        id: o.id, status: o.status, type: o.order_type || "delivery", etaMinutes: o.eta_minutes, total: o.estimated_total, created_at: o.created_at,
+        accepted_at: o.accepted_at, ready_at: o.ready_at, picked_up_at: o.picked_up_at, delivered_at: o.delivered_at, collected_at: o.collected_at,
         driver: o.status === "out_for_delivery" ? String(o.driver_name || "").split(" ")[0] || null : null,
       },
       { headers: { "Cache-Control": "no-store" } }

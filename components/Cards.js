@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/components/CartContext";
-import { useDelivery } from "@/components/DeliveryContext";
+import { useOrdering } from "@/components/OrderingContext";
 import { money } from "@/lib/format";
 import { toneAt } from "@/lib/tones";
 
@@ -45,7 +45,7 @@ function Stepper({ qty, label, tone, onMinus, onPlus, compact = false }) {
 // compact = small round buttons, used for the several size options on one card.
 function AddControl({ line, label, tone, compact = false }) {
   const { items, addItem, updateQty } = useCart();
-  const { open } = useDelivery();
+  const { anyOpen: open } = useOrdering();
   const qty = items.find((i) => i.key === line.key)?.qty || 0;
 
   if (qty > 0) {
@@ -57,11 +57,11 @@ function AddControl({ line, label, tone, compact = false }) {
     );
   }
   if (!open) {
-    // not delivering right now: browsing is fine, adding isn't
+    // not taking orders right now: browsing is fine, adding isn't
     return compact ? (
-      <button disabled aria-label={`${label}: not delivering right now`} className="shrink-0 w-9 h-9 rounded-full bg-ink/10 text-ink/30 text-xl leading-none">+</button>
+      <button disabled aria-label={`${label}: not taking orders right now`} className="shrink-0 w-9 h-9 rounded-full bg-ink/10 text-ink/30 text-xl leading-none">+</button>
     ) : (
-      <button disabled aria-label={`${label}: not delivering right now`} className="w-full rounded-full h-11 bg-ink/10 text-ink/40 font-display font-900 text-base">Closed</button>
+      <button disabled aria-label={`${label}: not taking orders right now`} className="w-full rounded-full h-11 bg-ink/10 text-ink/40 font-display font-900 text-base">Closed</button>
     );
   }
   return compact ? (
@@ -174,7 +174,7 @@ export function DealCard({ deal, tone = 2 }) {
 // The headline deal: one big gold banner at the top of Home.
 export function DealBanner({ deal }) {
   const { items, addItem, updateQty } = useCart();
-  const { open } = useDelivery();
+  const { anyOpen: open } = useOrdering();
   const key = `d${deal.id}`;
   const qty = items.find((i) => i.key === key)?.qty || 0;
   const line = { dealId: deal.id, key, name: `Deal: ${deal.title}`, price: deal.price };
@@ -203,7 +203,7 @@ export function DealBanner({ deal }) {
                 </div>
               ) : (
                 <button
-                  disabled={!open} onClick={() => addItem(line)} aria-label={open ? `Add ${deal.title}` : `${deal.title}: not delivering right now`}
+                  disabled={!open} onClick={() => addItem(line)} aria-label={open ? `Add ${deal.title}` : `${deal.title}: not taking orders right now`}
                   className="rounded-full bg-ink text-gold font-display font-900 text-lg px-8 h-12 active:scale-95 transition-transform disabled:opacity-40 disabled:active:scale-100"
                 >
                   {open ? "Add" : "Closed"}

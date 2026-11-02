@@ -4,9 +4,9 @@ import Footer from "@/components/Footer";
 import TabBar from "@/components/TabBar";
 import Chrome from "@/components/Chrome";
 import SourceTracker from "@/components/SourceTracker";
-import { DeliveryProvider } from "@/components/DeliveryContext";
+import { OrderingProvider } from "@/components/OrderingContext";
 import { DAY_NAMES, storeWindows } from "@/lib/hours";
-import { getDeliveryCached, publicDelivery } from "@/lib/db";
+import { getOrderingCached, publicOrdering } from "@/lib/db";
 import { SHOP, SITE_URL } from "@/lib/site";
 import { CartProvider } from "@/components/CartContext";
 import "@fontsource-variable/fraunces";
@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
 
 const TITLE = "Macclesfield General Store | Order online, delivered to your door";
 const DESCRIPTION =
-  "Coffee, breakfast, burgers and Punjabi curries from the general store on Venables St, Macclesfield. Order online and pay cash on delivery.";
+  "Coffee, breakfast, burgers and Punjabi curries from the general store on Venables St, Macclesfield. Order online for pickup or delivery.";
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -35,13 +35,13 @@ export const metadata = {
     siteName: SHOP.name,
     locale: "en_AU",
     title: "Order from Macclesfield General Store",
-    description: "Coffee, brekkie, burgers and Punjabi curries, delivered. Pay cash when it arrives.",
+    description: "Coffee, brekkie, burgers and Punjabi curries. Pick up or have it delivered.",
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Macclesfield General Store on Venables St" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Order from Macclesfield General Store",
-    description: "Coffee, brekkie, burgers and Punjabi curries, delivered. Pay cash when it arrives.",
+    description: "Coffee, brekkie, burgers and Punjabi curries. Pick up or have it delivered.",
     images: ["/og.jpg"],
   },
 };
@@ -74,15 +74,15 @@ const BUSINESS = {
     addressCountry: "AU",
   },
   openingHoursSpecification: storeHoursSpec(),
-  potentialAction: { "@type": "OrderAction", target: `${SITE_URL}/order`, deliveryMethod: "http://purl.org/goodrelations/v1#DeliveryModeOwnFleet" },
+  potentialAction: { "@type": "OrderAction", target: `${SITE_URL}/order`, deliveryMethod: ["http://purl.org/goodrelations/v1#DeliveryModeOwnFleet", "http://purl.org/goodrelations/v1#DeliveryModePickUp"] },
 };
 
 export default async function RootLayout({ children }) {
-  let delivery = null;
+  let ordering = null;
   try {
-    delivery = publicDelivery(await getDeliveryCached());
+    ordering = publicOrdering(await getOrderingCached());
   } catch (err) {
-    console.error("Delivery settings unavailable:", err.message); // pages fall back to the default times
+    console.error("Ordering settings unavailable:", err.message); // pages fall back to the default times
   }
   return (
     <html lang="en">
@@ -90,7 +90,7 @@ export default async function RootLayout({ children }) {
         className={`font-body bg-canvas text-ink pb-16 md:pb-0`}
       >
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(BUSINESS) }} />
-        <DeliveryProvider delivery={delivery} serverNow={Date.now()}>
+        <OrderingProvider ordering={ordering} serverNow={Date.now()}>
         <CartProvider>
           <SourceTracker />
           <Chrome><Nav /></Chrome>
@@ -98,7 +98,7 @@ export default async function RootLayout({ children }) {
           <Chrome><Footer /></Chrome>
           <TabBar />
         </CartProvider>
-        </DeliveryProvider>
+        </OrderingProvider>
       </body>
     </html>
   );
