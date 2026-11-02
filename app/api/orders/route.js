@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isStaff } from "@/lib/auth";
-import { createOrder, getDelivery, getOrders, getPickup, priceCart } from "@/lib/db";
+import { allowHit, createOrder, digitsOf, getDelivery, getOrders, getPickup, isPhoneBlocked, priceCart, waitingOrdersFor } from "@/lib/db";
 import { haversineKm } from "@/lib/geo";
 import { describeWindows, pickupState, serviceState } from "@/lib/hours";
 import { ORDER_TYPES } from "@/lib/orderStatus";
@@ -31,6 +31,26 @@ export async function POST(request) {
 
   if (!customerName || !phone || (!pickup && !address) || lines.length === 0) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // Bots: a hidden box real people never fill in, limits per internet address and per phone number,
+  // a cap on orders waiting for staff, and numbers staff have blocked.
+  if (clip(body.website, 100)) {
+    return NextResponse.json({ success: true, order: { id: 0, token: "x", total: 0, subtotal: 0, deliveryFee: 0, type: orderType } });
+  }
+  const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
+  const call = "Please call the store on (08) 8188 5301 to order.";
+  try {
+    if (await isPhoneBlocked(phone)) return NextResponse.json({ error: `We can't take this order online. ${call}` }, { status: 403 });
+    if (!(await allowHit(`order-ip:${ip}`, 10, 10)) || !(await allowHit(`order-phone:${digitsOf(phone)}`, 4, 10))) {
+      return NextResponse.json({ error: `Too many orders in a short time. Please wait a few minutes. ${call}` }, { status: 429 });
+    }
+    if ((await waitingOrdersFor(phone)) >= 3) {
+      return NextResponse.json({ error: `You already have orders waiting for us to confirm. ${call}` }, { status: 429 });
+    }
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Failed to place order" }, { status: 500 });
   }
 
   // Each way of ordering has its own times (Dashboard > Settings). Refuse anything outside them.

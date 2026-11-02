@@ -242,3 +242,11 @@ or one that is sold out, is skipped automatically. Starting list: Side of fries 
 meal" item), 5 nugget pack ($5.50), 3 dim sims ($6.50), Samosa ($3.50).
 
 To offer a Coke bottle: add it in **Dashboard > Menu** with a price, then add it here.
+
+## Spam and bots
+
+- Each phone number can place at most 4 orders in 10 minutes and have at most 3 waiting for staff to accept;
+  each internet address at most 10 orders in 10 minutes. Anyone over the limit is told to call the store.
+- The checkout form has a hidden box that only bots fill in. Those orders are quietly dropped.
+- On the Orders screen, a new order has a **Spam** button: it cancels the order and blocks that phone
+  number. Blocked numbers are listed in **Dashboard > Settings > Blocked phone numbers**, with **Unblock**.

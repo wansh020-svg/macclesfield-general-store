@@ -28,7 +28,7 @@ function ago(iso, now) {
   return h < 24 ? `${h} h ${mins % 60} min ago` : new Date(iso).toLocaleDateString("en-AU");
 }
 
-function OrderCard({ order, now, onStatus }) {
+function OrderCard({ order, now, onStatus, onSpam }) {
   const done = isDone(order.status);
   const pickup = order.order_type === "pickup";
   return (
@@ -104,6 +104,7 @@ function OrderCard({ order, now, onStatus }) {
         <div className="flex flex-wrap gap-2">
           {order.status === "new" && (
             <>
+              <button onClick={() => onSpam(order)} className={`${btn} border-2 border-ink/30 text-ink/60`}>Spam</button>
               <button onClick={() => onStatus(order, "cancelled")} className={`${btn} border-2 border-rust text-rust`}>Cancel</button>
               <button onClick={() => onStatus(order, "accepted")} className={`${btn} bg-pine text-canvas-light`}>Accept</button>
             </>
@@ -269,6 +270,20 @@ export default function OrdersBoard({ initialOrders }) {
   }, [waiting]);
 
   // ---- actions
+  async function onSpam(order) {
+    if (!window.confirm(`Mark order #${order.id} as spam? It is cancelled and ${order.phone} can't order online again.`)) return;
+    const before = orders;
+    setOrders((os) => os.map((o) => (o.id === order.id ? { ...o, status: "cancelled", cancel_reason: "Spam" } : o)));
+    try {
+      const res = await fetch(`/api/orders/${order.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ spam: true }) });
+      if (res.status === 401) { window.location.href = "/dashboard/login"; return; }
+      if (!res.ok) throw new Error();
+    } catch {
+      setOrders(before);
+      setError(`Couldn't mark order #${order.id} as spam. Try again.`);
+    }
+  }
+
   async function onStatus(order, status) {
     let reason;
     if (status === "cancelled") {
@@ -342,19 +357,19 @@ export default function OrdersBoard({ initialOrders }) {
       <h2 className="font-display font-900 text-2xl">Needs action {needsAction.length > 0 && <span className="text-rust">({needsAction.length})</span>}</h2>
       <div className="mt-3 space-y-4">
         {needsAction.length === 0 && <p className="text-ink/60">No new orders. This page updates by itself.</p>}
-        {needsAction.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} />)}
+        {needsAction.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} onSpam={onSpam} />)}
       </div>
 
       <h2 className="font-display font-900 text-2xl mt-10">In progress ({inProgress.length})</h2>
       <div className="mt-3 space-y-4">
         {inProgress.length === 0 && <p className="text-ink/60">Nothing being made or delivered.</p>}
-        {inProgress.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} />)}
+        {inProgress.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} onSpam={onSpam} />)}
       </div>
 
       <details className="mt-10">
         <summary className="cursor-pointer font-display font-900 text-2xl">Finished ({finished.length})</summary>
         <div className="mt-3 space-y-4">
-          {finished.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} />)}
+          {finished.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} onSpam={onSpam} />)}
         </div>
       </details>
     </div>

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isStaff } from "@/lib/auth";
-import { setOrderStatus } from "@/lib/db";
+import { markSpam, setOrderStatus } from "@/lib/db";
 import { STATUSES } from "@/lib/orderStatus";
 
 export async function PATCH(request, { params }) {
@@ -13,6 +13,10 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
   const id = Number(params.id);
+  if (body.spam === true && Number.isInteger(id)) {
+    const found = await markSpam(id);
+    return found ? NextResponse.json({ success: true }) : NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
   if (!Number.isInteger(id) || !STATUSES.includes(body.status)) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }

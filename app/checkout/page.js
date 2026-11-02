@@ -65,6 +65,7 @@ export default function CheckoutPage() {
           addressProof: pickup ? undefined : chosen?.proof,
           unverified: pickup ? false : unverified,
           source: readSource(),
+          website: form.website || "",
           notes: form.notes,
           items: items.map((i) => ({ itemId: i.itemId, dealId: i.dealId, size: i.size, options: i.options, qty: i.qty })),
         }),
@@ -116,6 +117,10 @@ export default function CheckoutPage() {
       )}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        {/* Trap for bots: people never see or fill this in. */}
+        <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}>
+          <label>Website <input tabIndex={-1} autoComplete="off" value={form.website || ""} onChange={(e) => setForm({ ...form, website: e.target.value })} /></label>
+        </div>
         <input type="text" placeholder="Full name" autoComplete="name" value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })} className={field} />
         <input type="tel" placeholder="Phone number" autoComplete="tel" value={form.phone}

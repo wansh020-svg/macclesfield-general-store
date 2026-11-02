@@ -20,7 +20,7 @@ async function body(request) {
 
 function fail(err) {
   // Validation errors from lib/db.js are written for humans; anything else is a server fault.
-  const known = /^(Missing|Nothing|Expected|Price|Sizes|Every|Options|Not found|.* can't be empty)/.test(err.message);
+  const known = /^(Missing|Nothing|Expected|Price|Sizes|Every|Options|Expected|Not found|.* can't be empty)/.test(err.message);
   if (!known) console.error(err);
   return NextResponse.json({ error: known ? err.message : "Something went wrong" }, { status: known ? 400 : 500 });
 }
