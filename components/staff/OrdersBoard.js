@@ -494,8 +494,6 @@ export default function OrdersBoard({ initialOrders }) {
         </span>
       </div>
 
-      <RunsPanel refreshKey={orders.map((o) => o.status).join("")} onRuns={setRuns} orders={orders} />
-
       <div role="tablist" aria-label="Filter orders" className="flex gap-2 mb-5">
         {[["all", "All"], ["delivery", `Delivery (${activeCount("delivery")})`], ["pickup", `Pickup (${activeCount("pickup")})`]].map(([key, text]) => (
           <button key={key} role="tab" aria-selected={filter === key} onClick={() => setFilter(key)}
@@ -530,6 +528,10 @@ export default function OrdersBoard({ initialOrders }) {
           {finished.map((o) => <OrderCard key={o.id} order={o} now={now} onStatus={onStatus} onSpam={onSpam} runs={runs} onMove={onMove} />)}
         </div>
       </details>
+
+      <div className="mt-10">
+        <RunsPanel refreshKey={orders.map((o) => o.status).join("")} onRuns={setRuns} orders={orders} />
+      </div>
     </div>
   );
 }

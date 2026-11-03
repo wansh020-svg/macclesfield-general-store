@@ -67,7 +67,7 @@ export default function RunsPanel({ refreshKey, onRuns, orders = [] }) {
 
   if (!board) return null;
   return (
-    <section aria-label="Delivery runs today" className="mb-8 rounded-3xl border-2 border-ink/15 bg-canvas-light p-5">
+    <section aria-label="Delivery runs today" className="rounded-3xl border-2 border-ink/15 bg-canvas-light p-5">
       <h2 className="font-display font-900 text-2xl">Delivery runs today</h2>
       {board.runs.length === 0 && <p className="text-ink/60 mt-2">No deliveries scheduled today. You can add a one-off run below.</p>}
       <ul className="mt-3 space-y-3">
