@@ -318,3 +318,12 @@ message and the open runs. Customers can book any run for today, from the mornin
 or Sorry (with the distance, and a pickup button). It is linked in the site footer and is meant for posts, e.g.
 `macclesfieldgeneralstore.com.au/delivery-area?src=facebook`. Only the answer and a rough distance are counted (never the
 address): see **Dashboard > Settings** for the last 7 days, including how many were just outside your radius.
+
+## Keeping hosting usage low
+
+The screens check the server on a timer, and on a free hosting plan every check counts. To keep usage down:
+the staff Orders screen checks every 12 seconds (45 seconds if the tab is hidden) and gets orders and driver alerts in
+one request; the delivery runs panel refreshes every 45 seconds and whenever an order changes; the driver app every
+10 seconds (30 if hidden); a customer's tracking page every 20 seconds (60 if hidden) and stops completely once the order
+is delivered, collected or cancelled; the run picker at checkout every 45 seconds while the page is in front.
+A new order can take up to about 12 seconds to appear on the staff screen.

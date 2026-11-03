@@ -9,8 +9,8 @@ import { money } from "@/lib/format";
 
 const RunMap = dynamic(() => import("@/components/RunMap"), { ssr: false, loading: () => <div className="h-56 rounded-2xl bg-pine-dark/50" /> });
 
-const POLL_VISIBLE = 6000;
-const POLL_HIDDEN = 20000;
+const POLL_VISIBLE = 10000;
+const POLL_HIDDEN = 30000;
 const big = "rounded-full font-display font-900 text-lg h-14 px-6 active:scale-95 transition-transform";
 
 function MineCard({ order, busy, onAction, onMove, first, last }) {

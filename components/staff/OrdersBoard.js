@@ -7,10 +7,10 @@ import { chime } from "@/lib/chime";
 import { fmtTime } from "@/lib/hours";
 import RunsPanel from "@/components/staff/RunsPanel";
 
-const POLL_VISIBLE = 8000;
+const POLL_VISIBLE = 12000; // fewer requests keep the free hosting plan going; 12 s is still quick for a new order
 const NAG_AFTER = 60000; // an order unseen this long rings faster
 const NAG_RING = 8000;
-const POLL_HIDDEN = 30000;
+const POLL_HIDDEN = 45000;
 const REPEAT_RING = 20000; // keep ringing while an order is waiting to be accepted
 const PILL = {
   new: "bg-gold text-ink animate-pulse",
@@ -266,7 +266,8 @@ export default function OrdersBoard({ initialOrders }) {
         return;
       }
       if (!res.ok) throw new Error("bad response");
-      const { orders: fresh } = await res.json();
+      const { orders: fresh, alerts: freshAlerts } = await res.json();
+      if (Array.isArray(freshAlerts)) setAlerts(freshAlerts);
       setError("");
       failures.current = 0;
       setOffline(false);
@@ -275,7 +276,6 @@ export default function OrdersBoard({ initialOrders }) {
         setBanner("Back online. Check the orders below.");
       }
       setOrders(fresh);
-      loadAlerts();
       const arrived = fresh.filter((o) => o.id > knownMax.current && o.status === "new");
       if (fresh.length) knownMax.current = Math.max(knownMax.current, ...fresh.map((o) => o.id));
       if (arrived.length) {
@@ -293,7 +293,7 @@ export default function OrdersBoard({ initialOrders }) {
         setOffline(true);
       }
     }
-  }, [ring, loadAlerts]);
+  }, [ring]);
 
   useEffect(() => {
     let timer;

@@ -33,15 +33,21 @@ export default function TrackOrder({ token }) {
         if (!alive) return;
         if (res.status === 404) return setState("missing");
         if (!res.ok) throw new Error();
-        setOrder(await res.json());
+        const data = await res.json();
+        setOrder(data);
         setState("ok");
+        // nothing more will change once it's finished or cancelled, so stop asking
+        if (["delivered", "collected", "cancelled", "fulfilled"].includes(data.status)) return;
       } catch {
         if (alive) setState((s) => (s === "ok" ? s : "error"));
       }
-      if (alive) timer = setTimeout(load, document.hidden ? 30000 : 10000);
+      if (alive) timer = setTimeout(load, document.hidden ? 60000 : 20000);
     }
     load();
-    return () => { alive = false; clearTimeout(timer); };
+    // coming back to the tab (or unlocking the phone) refreshes straight away
+    const onVisible = () => { if (document.visibilityState === "visible" && alive) { clearTimeout(timer); load(); } };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { alive = false; clearTimeout(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, [token]);
 
   if (state === "loading") return <main className="max-w-md mx-auto px-5 py-24 text-center text-ink/60">Loading your order...</main>;

@@ -16,7 +16,7 @@ export function useRuns(enabled) {
   useEffect(() => {
     if (!enabled) return;
     refresh();
-    const id = setInterval(refresh, 30000);
+    const id = setInterval(() => { if (!document.hidden) refresh(); }, 45000);
     return () => clearInterval(id);
   }, [enabled, refresh]);
   return { data, refresh, setData };

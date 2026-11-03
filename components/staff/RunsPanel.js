@@ -33,7 +33,7 @@ export default function RunsPanel({ refreshKey, onRuns, orders = [] }) {
 
   useEffect(() => {
     load();
-    const id = setInterval(load, 20000);
+    const id = setInterval(() => { if (!document.hidden) load(); }, 45000); // also reloads whenever the orders change
     return () => clearInterval(id);
   }, [load, refreshKey]);
 

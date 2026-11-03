@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isStaff } from "@/lib/auth";
 import { adelaideDate } from "@/lib/runs";
+import { openDriverAlerts } from "@/lib/db";
 import { allowHit, createOrder, getRunBoard, digitsOf, getDelivery, getOrders, getPickup, isPhoneBlocked, orderByClientKey, priceCart, waitingOrdersFor } from "@/lib/db";
 import { smsConfigured, textStaff } from "@/lib/sms";
 import { haversineKm } from "@/lib/geo";
@@ -182,7 +183,9 @@ export async function POST(request) {
 export async function GET() {
   if (!(await isStaff())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    return NextResponse.json({ orders: await getOrders() }, { headers: { "Cache-Control": "no-store" } });
+    // one request answers both: the orders and any driver "Need help" alerts
+    const [orders, alerts] = await Promise.all([getOrders(), openDriverAlerts().catch(() => [])]);
+    return NextResponse.json({ orders, alerts }, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Could not load orders" }, { status: 500 });
