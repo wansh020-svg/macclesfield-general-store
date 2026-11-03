@@ -32,6 +32,8 @@ export async function POST(request) {
         proof: await signAddressProof({ label: r.label, lat: r.lat, lng: r.lng }),
       });
     }
+    // closest first; anything inside the delivery area always comes before anything outside it
+    out.sort((a, b) => Number(b.inRange) - Number(a.inRange) || a.distanceKm - b.distanceKm);
     return NextResponse.json(
       { radiusKm: here.radiusKm, enforce: here.enforce, results: out },
       { headers: { "Cache-Control": "no-store" } }
