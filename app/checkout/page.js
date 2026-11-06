@@ -21,12 +21,13 @@ export default function CheckoutPage() {
   const { orderType, other, states, prepMinutes, cfg } = useOrdering();
   const pickup = orderType === "pickup";
   // Delivery is booked by run: pick one that is still open. Pickup just needs the shop to be open.
-  const { data: runData, refresh: refreshRuns, setData: setRunData } = useRuns(!pickup);
+  const asap = cfg.delivery.asap !== false; // no run to pick: it goes out as soon as it is ready
+  const { data: runData, refresh: refreshRuns, setData: setRunData } = useRuns(!pickup && !asap);
   const openRuns = (runData?.runs || []).filter((r) => r.status === "open");
   const [runTime, setRunTime] = useState("");
-  const serving = pickup ? states.pickup.open : runData ? openRuns.length > 0 : states.delivery.open;
+  const serving = pickup || asap ? states[orderType].open : runData ? openRuns.length > 0 : states.delivery.open;
   useEffect(() => {
-    if (pickup) return;
+    if (pickup || asap) return;
     if (!openRuns.some((r) => r.time === runTime)) setRunTime(openRuns[0]?.time || "");
   }, [pickup, runData]); // eslint-disable-line react-hooks/exhaustive-deps
   const [form, setForm] = useState({ name: "", phone: "", address: "", notes: "" });
@@ -78,7 +79,7 @@ export default function CheckoutPage() {
           source: readSource(),
           clientKey: (attempt.current ??= crypto.randomUUID()),
           website: form.website || "",
-          run: pickup ? undefined : runTime,
+          run: pickup || asap ? undefined : runTime,
           notes: form.notes,
           items: items.map((i) => ({ itemId: i.itemId, dealId: i.dealId, size: i.size, options: i.options, qty: i.qty })),
         }),
@@ -164,7 +165,13 @@ export default function CheckoutPage() {
         />
         )}
 
-        {!pickup && <RunPicker data={runData} value={runTime} onChange={setRunTime} />}
+        {!pickup && asap && (
+          <div className="rounded-3xl bg-pine text-canvas-light px-5 py-4">
+            <p className="font-display font-900 text-lg">Delivered in about {cfg.delivery.asapMinutes || 45}&ndash;{(cfg.delivery.asapMinutes || 45) + 15} minutes</p>
+            <p className="text-sm text-canvas-light/80 mt-1">We make it fresh and the driver brings it as soon as it&apos;s ready. Pay cash at the door.</p>
+          </div>
+        )}
+        {!pickup && !asap && <RunPicker data={runData} value={runTime} onChange={setRunTime} />}
 
         <textarea placeholder={pickup ? "Notes (optional)" : "Notes: unit number, gate code, anything else (optional)"} rows={3} value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })} className={field} />

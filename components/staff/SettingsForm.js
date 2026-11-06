@@ -63,11 +63,29 @@ export default function SettingsForm({ initial, initialPickup }) {
   return (
     <div className="space-y-6">
       <section className="rounded-3xl border-2 border-ink/15 bg-canvas-light p-5 space-y-4">
-        <h2 className="font-display font-900 text-xl">Delivery runs</h2>
+        <h2 className="font-display font-900 text-xl">Delivery</h2>
+        <fieldset className="space-y-2">
+          <legend className="font-mono text-xs uppercase tracking-widest text-ink/60 mb-1">How customers order delivery</legend>
+          {[
+            [true, "As soon as it's ready (customers just order, no run to pick)"],
+            [false, "Pick a delivery run (4:30, 5:30... with limited spots)"],
+          ].map(([value, label]) => (
+            <label key={String(value)} className="flex items-start gap-3">
+              <input type="radio" name="asap" className="mt-1.5 w-4 h-4" checked={(d.asap !== false) === value} disabled={busy}
+                onChange={async () => {
+                  const before = d;
+                  setD({ ...d, asap: value });
+                  if (!(await run({ asap: value }, () => "Saved. The website updates within a minute."))) setD(before);
+                }} />
+              <span>{label}</span>
+            </label>
+          ))}
+          {d.asap !== false && <p className="text-sm text-ink/60">Delivery hours are from the first run time to the end of the last run below. The driver app shows a &ldquo;Pick up all&rdquo; button.</p>}
+        </fieldset>
         <fieldset className="space-y-2">
           <legend className="font-mono text-xs uppercase tracking-widest text-ink/60 mb-1">Online ordering is</legend>
           {[
-            ["schedule", "Following the runs below"],
+            ["schedule", "Following the times below"],
             ["closed", "Paused (no delivery orders, even on run days)"],
           ].map(([value, label]) => (
             <label key={value} className="flex items-start gap-3">
@@ -81,7 +99,7 @@ export default function SettingsForm({ initial, initialPickup }) {
             </label>
           ))}
         </fieldset>
-        <p className="font-mono text-xs uppercase tracking-widest text-ink/60">Weekly delivery runs (Adelaide time)</p>
+        <p className="font-mono text-xs uppercase tracking-widest text-ink/60">Weekly delivery times (Adelaide time)</p>
         <RunsEditor runs={runs} onChange={setRuns} busy={busy} onSave={() => run({ runs }, () => "Delivery runs saved. The website updates within a minute.")} />
       </section>
 

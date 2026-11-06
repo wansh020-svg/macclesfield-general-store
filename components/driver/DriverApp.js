@@ -351,17 +351,17 @@ export default function DriverApp({ driver, initialBoard }) {
       <div className="mt-3 space-y-6">
         {groups.length === 0 && <p className="text-canvas-light/60">No orders waiting. This page updates by itself.</p>}
         {groups.map(([time, list]) => (
-          <section key={time || "other"} aria-label={time ? `${fmtTime(time)} run` : "Other orders"} className="space-y-3">
+          <section key={time || "other"} aria-label={time ? `${fmtTime(time)} run` : "Delivery orders"} className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-display font-900 text-xl">{time ? `${fmtTime(time)} run` : "Other orders"}</p>
+                <p className="font-display font-900 text-xl">{time ? `${fmtTime(time)} run` : "Delivery orders"}</p>
                 <p className="font-mono text-xs uppercase tracking-widest text-canvas-light/60">
                   {list.length} ready{cookingFor(time) > 0 ? ` · ${cookingFor(time)} still being made` : ""}
                 </p>
               </div>
-              {time && list.length > 0 && (
+              {list.length > 0 && (
                 <button disabled={busyId === `run:${time}`} onClick={() => startRun(time, cookingFor(time))} className="rounded-full bg-gold text-ink font-display font-900 h-12 px-5 shrink-0 disabled:opacity-50 active:scale-95 transition-transform">
-                  Start run ({list.length})
+                  {time ? "Start run" : "Pick up all"} ({list.length})
                 </button>
               )}
             </div>

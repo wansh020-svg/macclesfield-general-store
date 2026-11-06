@@ -65,7 +65,7 @@ export default function RunsPanel({ refreshKey, onRuns, orders = [] }) {
     return { plan, stops: plan.order.map((id, k) => ({ ...list.find((o) => o.id === id), n: k + 1 })) };
   };
 
-  if (!board) return null;
+  if (!board || board.asap) return null; // with "as soon as it's ready" there are no runs to manage
   return (
     <section aria-label="Delivery runs today" className="rounded-3xl border-2 border-ink/15 bg-canvas-light p-5">
       <h2 className="font-display font-900 text-2xl">Delivery runs today</h2>

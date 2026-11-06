@@ -27,7 +27,7 @@ export function OrderingProvider({ ordering, serverNow, children }) {
     return () => clearInterval(id);
   }, []);
 
-  const states = useMemo(() => ({ delivery: runsServiceState(cfg.delivery, now), pickup: serviceState(cfg.pickup, now) }), [cfg, now]);
+  const states = useMemo(() => ({ delivery: cfg.delivery.asap !== false ? serviceState(cfg.delivery, now) : runsServiceState(cfg.delivery, now), pickup: serviceState(cfg.pickup, now) }), [cfg, now]);
 
   // On arrival, remember their last choice, but if that one is closed and the other is open, use the open one.
   useEffect(() => {

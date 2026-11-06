@@ -58,7 +58,9 @@ export default function AreaChecker() {
   const openRun = runs?.runs?.find((r) => r.status === "open");
   const when = runs?.paused
     ? "Delivery is paused right now."
-    : openRun
+    : runs?.asap
+      ? `Delivery ${runs.hours}, usually about ${runs.asapMinutes || 45}\u2013${(runs.asapMinutes || 45) + 15} minutes after you order.`
+      : openRun
       ? `Next delivery today: leaves ${openRun.delay ? openRun.departs : openRun.label}, arriving about ${openRun.arrives}.`
       : runs?.next
         ? `Next deliveries: ${runs.next.day} from ${runs.next.label}.`
@@ -97,7 +99,7 @@ export default function AreaChecker() {
             <p className="font-display font-900 text-3xl leading-tight">Yes, we deliver to you!</p>
             <p className="mt-2 text-canvas-light/80">You&apos;re about {verdict.distanceKm} km from the store.</p>
             {when && <p className="mt-3 font-display font-700">{when}</p>}
-            <p className="mt-2 text-sm text-canvas-light/70">Delivery Fri to Sun, booked by run. Pickup is open every day.</p>
+            <p className="mt-2 text-sm text-canvas-light/70">{runs?.asap ? "" : "Delivery is booked by run. "}Pickup is open every day.</p>
             <Link href="/order" className="mt-5 block text-center rounded-full bg-gold text-ink font-display font-900 text-lg py-4">Order now</Link>
           </div>
         ) : (

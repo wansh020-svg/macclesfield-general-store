@@ -327,3 +327,10 @@ one request; the delivery runs panel refreshes every 45 seconds and whenever an 
 10 seconds (30 if hidden); a customer's tracking page every 20 seconds (60 if hidden) and stops completely once the order
 is delivered, collected or cancelled; the run picker at checkout every 45 seconds while the page is in front.
 A new order can take up to about 12 seconds to appear on the staff screen.
+
+
+## Delivery: "as soon as it's ready" (default)
+
+Customers don't pick a delivery run any more. They order, see "Delivered in about 45-60 minutes", and it goes out when the kitchen marks it ready. Delivery hours come from the first run time to the end of the last run (Fri-Sun 4:30pm-8pm by default). In the driver app, ready delivery orders sit under "Delivery orders" with a "Pick up all" button (or "Pick up" one at a time).
+
+Switch back to booking runs any time: Dashboard > Settings > Delivery > "Pick a delivery run". Runs, limits and the runs panel are kept and come back.
