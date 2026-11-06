@@ -16,7 +16,7 @@ const DELIVERY_STEPS = [
 const pickupSteps = (eta) => [
   { key: "new", title: "Order received", sub: "We'll start on it shortly." },
   { key: "accepted", title: "Being made", sub: eta ? `Ready in about ${eta} minutes.` : "The kitchen has your order." },
-  { key: "ready", title: "Ready to collect", sub: `Come on in to ${SHOP.name}, ${SHOP.street}. Pay at the counter.` },
+  { key: "ready", title: "Ready to collect", sub: `Come on in to ${SHOP.name}, ${SHOP.street}. Pay at the counter by card or cash.` },
   { key: "collected", title: "Collected", sub: "Enjoy!" },
 ];
 
@@ -103,7 +103,7 @@ export default function TrackOrder({ token }) {
         </>
       )}
       <div className="mt-10 rounded-3xl bg-gold px-5 py-4 flex items-center justify-between">
-        <span className="font-display font-700">{pickup ? "Pay at the counter" : "Pay cash on delivery"}</span>
+        <span className="font-display font-700">{pickup ? "Pay at the counter (card or cash)" : "Pay cash on delivery"}</span>
         <span className="font-display font-900 text-3xl">{money(order.total)}</span>
       </div>
       <p className="mt-6 text-sm text-ink/60">Questions? Call <a href="tel:0881885301" className="underline">(08) 8188 5301</a>. This page updates by itself.</p>

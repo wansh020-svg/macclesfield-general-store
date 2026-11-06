@@ -23,7 +23,7 @@ async function safe(fn) {
 const STEPS = [
   ["1", "Pick your food", "Swipe the shelves and tap +, then choose pickup or delivery."],
   ["2", "Place your order", "We'll call to confirm."],
-  ["3", "Pay cash", "At the door for delivery, or at the counter for pickup."],
+  ["3", "Pay", "Cash at the door for delivery. Card or cash at the counter for pickup."],
 ];
 
 export default async function Home() {

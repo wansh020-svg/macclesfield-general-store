@@ -26,7 +26,7 @@ export default async function OrderPage() {
             Pickup or delivery
           </span>
           <h1 className="font-display font-900 text-5xl leading-none mt-4">What are you having?</h1>
-          <p className="text-canvas-light/70 mt-3">Swipe each shelf, tap + to add. Pay cash on delivery, or at the counter for pickup.</p>
+          <p className="text-canvas-light/70 mt-3">Swipe each shelf, tap + to add. Cash on delivery, or card or cash at the counter for pickup.</p>
           <ServiceStatus className="mt-4" />
           {!live && (
             <p className="mt-4 text-sm rounded-xl bg-rust px-4 py-3">

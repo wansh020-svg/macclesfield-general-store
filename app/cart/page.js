@@ -87,7 +87,7 @@ export default function CartPage() {
       <p className="text-ink/50 text-sm mt-6">
         {orderType === "delivery"
           ? `Delivery is ${feeText(cfg.delivery)}${short ? `, and needs at least $${short.min} of food` : ""}. Pay cash on delivery.`
-          : "Pickup has no extra charge. Pay at the counter."}
+          : "Pickup has no extra charge. Pay at the counter by card or cash."}
       </p>
 
       <div className="fixed bottom-0 inset-x-0 z-50 bg-canvas border-t border-ink/10 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">

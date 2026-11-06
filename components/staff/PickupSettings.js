@@ -53,7 +53,7 @@ export default function PickupSettings({ initial }) {
   return (
     <section className="rounded-3xl border-2 border-ink/15 bg-canvas-light p-5 space-y-4">
       <h2 className="font-display font-900 text-xl">Pickup times</h2>
-      <p className="text-sm text-ink/70">Customers collect from the counter and pay there. By default pickup follows the shop&apos;s opening hours.</p>
+      <p className="text-sm text-ink/70">Customers collect from the counter and pay there by card or cash. By default pickup follows the shop&apos;s opening hours.</p>
 
       <fieldset className="space-y-2">
         <legend className="font-mono text-xs uppercase tracking-widest text-ink/60 mb-1">Pickup ordering is</legend>

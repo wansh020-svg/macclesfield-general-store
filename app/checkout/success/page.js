@@ -15,7 +15,7 @@ export default function SuccessPage({ searchParams }) {
       {id && <p className="font-mono text-sm mb-3">Order #{id}</p>}
       <p className="text-ink/70">
         {pickup
-          ? "We've got your order and will have it ready to collect soon. Pay at the counter when you pick it up."
+          ? "We've got your order and will have it ready to collect soon. Pay at the counter when you pick it up (card or cash)."
           : "We've got your order and will call to confirm details and delivery time. Payment is cash on delivery."}
       </p>
       {token && (

@@ -122,7 +122,7 @@ export default function CheckoutPage() {
     <section className="max-w-md mx-auto px-5 pt-8 pb-16">
       <h1 className="font-display font-900 text-4xl leading-none">{pickup ? "Pick up" : "Where to?"}</h1>
       <p className="text-ink/60 mt-2">
-        {pickup ? "Pay at the counter" : "Cash on delivery"}: <span className="font-display font-900 text-ink">{money(grand)}</span>{fee > 0 ? ` (includes ${money(fee)} delivery)` : ""}. No card needed online.
+        {pickup ? "Pay at the counter by card or cash" : "Cash on delivery"}: <span className="font-display font-900 text-ink">{money(grand)}</span>{fee > 0 ? ` (includes ${money(fee)} delivery)` : ""}. Nothing to pay online.
       </p>
 
       <OrderTypeSwitch className="mt-5" />

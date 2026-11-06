@@ -60,7 +60,7 @@ export default async function PosterPage({ searchParams }) {
                 <ol className="font-display font-700" style={{ fontSize: "5.2mm", marginTop: "6mm", display: "grid", gap: "2mm" }}>
                   <li><span className={`${t.accent} font-900`}>1</span>&nbsp; Pick your food</li>
                   <li><span className={`${t.accent} font-900`}>2</span>&nbsp; Choose pickup or delivery</li>
-                  <li><span className={`${t.accent} font-900`}>3</span>&nbsp; Pay cash, door or counter</li>
+                  <li><span className={`${t.accent} font-900`}>3</span>&nbsp; Cash at the door, card or cash in store</li>
                 </ol>
               </div>
             </div>
