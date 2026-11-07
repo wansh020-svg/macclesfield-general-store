@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import TabBar from "@/components/TabBar";
 import Chrome from "@/components/Chrome";
 import SourceTracker from "@/components/SourceTracker";
+import SiteAnalytics from "@/components/SiteAnalytics";
 import { OrderingProvider } from "@/components/OrderingContext";
 import { DAY_NAMES, storeWindows } from "@/lib/hours";
 import { getOrderingCached, publicOrdering } from "@/lib/db";
@@ -97,6 +98,7 @@ export default async function RootLayout({ children }) {
           <main>{children}</main>
           <Chrome><Footer /></Chrome>
           <TabBar />
+          <SiteAnalytics />
         </CartProvider>
         </OrderingProvider>
       </body>
