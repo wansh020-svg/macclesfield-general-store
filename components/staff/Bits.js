@@ -16,7 +16,7 @@ export function Label({ text, children, hint }) {
   );
 }
 
-export function ImageField({ imageId, onChange }) {
+export function ImageField({ imageId, onChange, emptyText = "No picture. The card shows text only." }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -43,7 +43,7 @@ export function ImageField({ imageId, onChange }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={`/api/images/${imageId}`} alt="" className="w-20 h-14 object-cover rounded-lg border border-ink/10" />
         ) : (
-          <span className="text-xs text-ink/50">No picture. The card shows text only.</span>
+          <span className="text-xs text-ink/50">{emptyText}</span>
         )}
         <label className={`${btn} bg-pine text-canvas-light cursor-pointer ${busy ? "opacity-50" : ""}`}>
           {busy ? "Uploading..." : imageId ? "Change" : "Add picture"}

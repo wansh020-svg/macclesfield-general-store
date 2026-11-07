@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { api } from "@/components/staff/api";
-import { Label, Toggle, btn, input } from "@/components/staff/Bits";
+import { ImageField, Label, Toggle, btn, input } from "@/components/staff/Bits";
 
 function Offer({ offer, items, onSaved, onDeleted }) {
-  const [o, setO] = useState({ item_id: offer.item_id, size: offer.size || "", label: offer.label || "", active: offer.active });
+  const [o, setO] = useState({ item_id: offer.item_id, size: offer.size || "", label: offer.label || "", active: offer.active, image_id: offer.image_id ?? null });
   const [msg, setMsg] = useState("");
   const item = items.find((i) => i.id === Number(o.item_id));
   const sizes = Array.isArray(item?.sizes) ? item.sizes : [];
@@ -50,6 +50,10 @@ function Offer({ offer, items, onSaved, onDeleted }) {
       <Label text="Shown to customers as (optional)" hint="Leave blank to use the item name.">
         <input className={`${input} mt-1`} value={o.label} onChange={(e) => setO({ ...o, label: e.target.value })} placeholder="e.g. 5 nugget pack" />
       </Label>
+      <ImageField
+        imageId={o.image_id} onChange={(id) => { setO({ ...o, image_id: id }); save({ image_id: id }); }}
+        emptyText="None: uses the menu item's picture, or a plain tile."
+      />
       <div className="flex flex-wrap items-center gap-2">
         <Toggle on={o.active} onChange={(v) => { setO({ ...o, active: v }); save({ active: v }); }} onLabel="Showing" offLabel="Hidden" />
         <button onClick={() => save()} className={`${btn} bg-rust text-canvas-light`}>Save</button>
@@ -78,7 +82,7 @@ export default function OffersEditor({ initialOffers, items }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-ink/70">
-        Shown to customers at checkout as &ldquo;Add something to your order?&rdquo;. They can add each one as many times as they like.
+        Shown to customers as picture cards in a &ldquo;Make it extra tasty&rdquo; pop-up when they reach checkout. They can add each one as many times as they like.
         An item with no price, or one that is sold out, is left out until it&apos;s priced or back in stock.
       </p>
       {offers.map((o) => (

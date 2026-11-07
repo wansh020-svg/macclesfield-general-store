@@ -232,12 +232,14 @@ against a pick-one rule, so a phone can't change a price.
 
 ## Add-ons at checkout
 
-Before they enter their details, customers see **Add something to your order?** with a few quick extras
-(each has Add, then - and + so they can order as many as they like). They are ordinary menu items, so they
+When customers reach checkout, a **Make it extra tasty** pop-up shows the extras as picture cards (a red + on each,
+then - and + so they can order as many as they like) with **No thanks** / **Continue** at the bottom. It pops up once per
+visit; a bar on the checkout page opens it again. They are ordinary menu items, so they
 share a cart line with the same item on the menu and are priced by the server like everything else.
 
 Staff edit the list in **Dashboard > Extras > Offered at checkout**: pick the menu item (and size), give it
-a short name if you like ("5 nugget pack"), switch it Showing/Hidden, or remove it. An item with no price,
+a short name if you like ("5 nugget pack"), add a picture (optional: without one the card uses the menu item's
+picture, or a plain tile), switch it Showing/Hidden, or remove it. An item with no price,
 or one that is sold out, is skipped automatically. Starting list: Side of fries ($3, the "Side of chips with
 meal" item), 5 nugget pack ($5.50), 3 dim sims ($6.50), Samosa ($3.50).
 
@@ -334,3 +336,10 @@ A new order can take up to about 12 seconds to appear on the staff screen.
 Customers don't pick a delivery run any more. They order, see "Delivered in about 45-60 minutes", and it goes out when the kitchen marks it ready. Delivery hours come from the first run time to the end of the last run (Fri-Sun 4:30pm-8pm by default). In the driver app, ready delivery orders sit under "Delivery orders" with a "Pick up all" button (or "Pick up" one at a time).
 
 Switch back to booking runs any time: Dashboard > Settings > Delivery > "Pick a delivery run". Runs, limits and the runs panel are kept and come back.
+
+## Soft drinks (Cold Drinks)
+
+Added once to **Cold Drinks** (category "Soft Drinks"), no pictures: Fanta & Diet Coke 600mL $4.99 (5 flavours), Coca-Cola
+375mL can $3.50, 1.25L $5.95, 2L $6.35 (each Classic, Diet or Zero Sugar), Coca-Cola glass bottle $4, Pump water 750mL $4.50
+(Original, Berry Storm), Red Bull 250mL $4.50 (Original, Peach, Lilac), Dr Pepper 355mL can $4, Kirks 375mL can $3.
+Flavours show as rows on one card. Edit, price, add pictures or mark sold out in **Dashboard > Menu** like any item.
