@@ -16,7 +16,7 @@ const tabs = [
 ];
 
 // Pages that have their own pinned bar at the bottom, or are staff-only.
-const HIDDEN = ["/cart", "/checkout", "/dashboard", "/driver", "/track", "/poster", "/flyer", "/tablecard"];
+const HIDDEN = ["/cart", "/checkout", "/dashboard", "/driver", "/track", "/poster", "/flyer", "/tablecard", "/thankyou"];
 
 export default function TabBar() {
   const path = usePathname() || "/";
