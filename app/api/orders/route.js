@@ -56,7 +56,7 @@ export async function POST(request) {
   const call = "Please call the store on (08) 8188 5301 to order.";
   try {
     if (await isPhoneBlocked(phone)) return NextResponse.json({ error: `We can't take this order online. ${call}` }, { status: 403 });
-    if (!(await allowHit(`order-ip:${ip}`, 10, 10)) || !(await allowHit(`order-phone:${digitsOf(phone)}`, 4, 10))) {
+    if (!(await allowHit(`order-ip:${ip}`, 30, 10)) || !(await allowHit(`order-phone:${digitsOf(phone)}`, 6, 10))) {
       // a simultaneous tap may have just placed this very order: hand it back instead of refusing
       const first = clientKey ? await orderByClientKey(clientKey) : null;
       if (first) return NextResponse.json({ success: true, order: first, repeat: true });
