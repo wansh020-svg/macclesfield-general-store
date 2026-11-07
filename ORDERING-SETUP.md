@@ -343,3 +343,9 @@ Added once to **Cold Drinks** (category "Soft Drinks"), no pictures: Fanta & Die
 375mL can $3.50, 1.25L $5.95, 2L $6.35 (each Classic, Diet or Zero Sugar), Coca-Cola glass bottle $4, Pump water 750mL $4.50
 (Original, Berry Storm), Red Bull 250mL $4.50 (Original, Peach, Lilac), Dr Pepper 355mL can $4, Kirks 375mL can $3.
 Flavours show as rows on one card. Edit, price, add pictures or mark sold out in **Dashboard > Menu** like any item.
+
+## Hot drink pictures
+
+Coffees, hot chocolates, teas, teapots and every chai got a picture once (Nov 2026), only where the item had none.
+Change or remove any of them in **Dashboard > Menu**. The pictures live in `lib/hotDrinkPictures.js` and are only loaded
+the one time they are added.
