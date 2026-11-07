@@ -1,7 +1,7 @@
 "use client";
 
 // Controls shown on screen only (hidden when printing).
-export default function PrintBar({ title, offer, hint, light }) {
+export default function PrintBar({ title, offer, hint, light, area = "" }) {
   return (
     <div className="print:hidden bg-pine-dark text-canvas-light px-5 py-4 sticky top-0 z-50">
       <div className="max-w-3xl mx-auto flex flex-wrap items-end gap-3">
@@ -10,6 +10,7 @@ export default function PrintBar({ title, offer, hint, light }) {
           <p className="text-xs text-canvas-light/60">{hint}</p>
         </div>
         <form method="get" className="flex items-end gap-2">
+          {area && <input type="hidden" name="area" value={area} />}
           <label className="text-xs">
             <span className="block text-canvas-light/60 mb-1">Offer line (optional)</span>
             <input name="offer" defaultValue={offer} maxLength={60} placeholder="e.g. Free chips with your first order"
