@@ -5,8 +5,9 @@ export async function GET(_req, { params }) {
   if (!Number.isInteger(id)) return new Response("Not found", { status: 404 });
   const img = await getImage(id);
   if (!img) return new Response("Not found", { status: 404 });
-  // A replaced picture gets a new id, so these can be cached for good.
+  // A replaced picture gets a new id, so these can be cached for good: by the phone (max-age) and by
+  // Vercel's servers (s-maxage), so after the first request nobody waits for the database.
   return new Response(Buffer.from(img.data, "base64"), {
-    headers: { "Content-Type": img.mime, "Cache-Control": "public, max-age=31536000, immutable" },
+    headers: { "Content-Type": img.mime, "Cache-Control": "public, max-age=31536000, s-maxage=31536000, immutable" },
   });
 }
